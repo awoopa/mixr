@@ -1,6 +1,6 @@
 /*************************************
 //
-// mixr app
+// mixr	 app
 //
 **************************************/
 
@@ -15,13 +15,10 @@ var runningPortNumber = process.env.PORT || 1337;
 var _ = require('lodash');
 var YouTube = require('youtube-node');
 var yt = new YouTube();
-var key = require('./key.js');
 
 var url = require('url');
 
 var moment = require('moment');
-
-yt.setKey(key.youtube);
 
 var syncDuration = 2; // seconds
 
