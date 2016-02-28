@@ -8,7 +8,7 @@
 		var tabs = [document.querySelector(".top-tab img"), document.querySelector(".side-tab img")];
 		var c = document.getElementById("canvas-page");
 		var ctx = c.getContext("2d");
-		
+
 		var tracklistCanvas = document.getElementById("tracklist-canvas");
 		var tracklistCtx = tracklistCanvas.getContext("2d");
 
@@ -17,7 +17,7 @@
 
 		window.canvas = c;
 		window.ctx = ctx;
-		
+
 		window.tracklistCanvas = tracklistCanvas;
 		window.tracklistCtx = tracklistCtx;
 

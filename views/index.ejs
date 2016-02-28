@@ -14,6 +14,7 @@
         <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 		<script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
+        <script type="text/javascript" src="js/visualize.js"></script>
         <script type="text/javascript" src="js/javascript.js"></script>
         <script type="text/javascript" src="js/socketclient.js"></script>
         <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
@@ -46,15 +47,6 @@
                         <button type="button" class="btn btn-primary urlbutton" id="submit-track">Submit Music</button>
                     </div>
                 </div>
-                <div class="voting">
-                    <div class="video-entry">
-                        <div class="video-thumbnail"></div>
-                        <div class="video-info-text">
-                            <div class="video-title"></div>
-                            <div class="video-uploader"></div>
-                        </div>
-                    </div>
-                </div>
                 <div class="chat">
                     <div class="chatArea">
                         <ul class="messages"></ul>
@@ -72,6 +64,9 @@
         <canvas id="tracklist-canvas" height="0">
         </canvas>
         </div>
+
+        <div id="visualizer"></div>
+
         <!-- Create Room Modal  -->
         <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog modal-sm" role="document">
@@ -96,5 +91,6 @@
                 </div>
             </div>
         </div>
+
     </body>
 </html>

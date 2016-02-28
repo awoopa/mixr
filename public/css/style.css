@@ -74,11 +74,6 @@ html, body {
 	z-index: -1;
 }
 
-/*#youtube {
-	width: 100%;
-	display: block;
-}*/
-
 .side-tab {
 	position: absolute;
 	height: 100%;
@@ -180,50 +175,11 @@ html, body {
     clip: rect(0, 0, 0, 0);
 }
 
-.voting {
-	text-align: center;
-	height: 50%;
-	overflow: auto;
-	padding-right: 15px;
-    border-bottom: 1px solid #fff;
-}
-
-.voting p {
-	/*margin: 0 30px;*/
-	color: white;
-	display: inline;
-}
-
-.voting i {
-	font-size: 2em;
-	cursor: pointer;
-}
-
 .video-entry {
 	border-top: 1px solid white;
 	border-bottom: 1px solid white;
 	display: flex;
 	align-items: center;
-}
-
-.video-info-text {
-	color: white;
-	text-align: left;
-	width: 245px;
-	overflow: hidden;
-}
-
-.video-title {
-	font-size: 2em;
-}
-
-.vote-arrows {
-	width: 48px;
-}
-
-.video-thumbnail {
-	width: 90px;
-	margin: 0 5px 0 5px;
 }
 
 form {
@@ -315,14 +271,9 @@ form {
 	background: #2D57FF;
 }
 
-.upvotecolor {
-	color: #ff8b60 !important;
-}
+/* Visualizer stuff */
 
-.downvotecolor {
-	color: #9494ff !important;
-}
-
-#counter {
-    display: none;
+.canvas
+{
+    display: inline-block;
 }

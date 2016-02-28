@@ -1,4 +1,24 @@
 var audioCtx = new AudioContext();
+var analyser = audioCtx.createAnalyser();
+var visualizer = new Visualizer();
+analyser.fftSize = 256;
+
+var SoundCloudAudioSource = function(audio) {
+	var self = this;
+	var sampleAudioStream = function() {
+		analyser.getByteFrequencyData(self.streamData);
+		// calculate an overall volume value
+		var total = 0;
+		for (var i = 0; i < 80; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
+			total += self.streamData[i];
+		}
+		self.volume = total;
+	};
+	setInterval(sampleAudioStream, 20);
+	// public properties and methods
+	this.volume = 0;
+	this.streamData = new Uint8Array(128);
+}
 
 var createSource = function(trackNumber) {
 	var audio = new Audio();
@@ -8,7 +28,15 @@ var createSource = function(trackNumber) {
 	audio.crossOrigin = "anonymous";
 
 	var source = audioCtx.createMediaElementSource(audio);
+	source.connect(analyser);
 	source.connect(audioCtx.destination);
+	var audioSource = new SoundCloudAudioSource(audio);
+
+	visualizer.init({
+        containerId: 'visualizer',
+        audioSource: audioSource
+    });
+
 	return source;
 }
 
