@@ -79,7 +79,7 @@ function Track(id) {
 	this.id = id;
 	this.bpm = 100;
 	this.sampleRate = 44100;
-	this.length = 100;
+	this.length;
 	this.startTime = 10000;
 	this.waveformURL;
 }
@@ -102,6 +102,7 @@ function getTrackFromURL(url) {
 			console.log("TRACK_INFO: " + track_info);
 			var track = new Track(track_info.id);
 			track.waveformURL = track_info.waveform_url;
+			track.length = track_info.duration;
 			resolve(track);
 		});
 	  });
