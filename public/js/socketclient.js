@@ -1,3 +1,19 @@
+var audioCtx = new AudioContext();
+
+var createSource = function(trackNumber) {
+	var audio = new Audio();
+	var url = 'http://api.soundcloud.com/tracks/' + trackNumber + '/stream?client_id=4c85f5a7670cebd708284488e725bb6b';
+
+	audio.src = url;
+	audio.crossOrigin = "anonymous";
+
+	var source = audioCtx.createMediaElementSource(audio);
+	source.connect(audioCtx.destination);
+	return source;
+}
+
+window.source = createSource("205955458");
+
 var vote = function(elemid) {
 	var elem = document.getElementById(elemid);
 	var vote;
@@ -82,15 +98,11 @@ var vote2 = function(elem2) {
 		/*usernameSubmit.onclick = setUsername;*/
 		messageSubmit.onclick = messageSend;
 
-		var urlinput = document.querySelector('.form-control');
-		var urlbutton = document.querySelector('.urlbutton');
-		urlbutton.onclick = submitUrl;
-
 		var videoUrlInput = document.querySelector('#video-url')
 		var videoSubmit = document.querySelector('#submit-video');
 		videoSubmit.onclick = submitVideo;
 
-		socket.emit('join room', {roomName: document.body.dataset.room, userName: username});
+		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
 		messageInput.onkeypress = function(event) {
 			//enter key is 13
@@ -119,12 +131,6 @@ var vote2 = function(elem2) {
 			}
 		}*/
 
-		function submitUrl() {
-			var url = urlinput.value;
-			console.log(url);
-			socket.emit('add video', {videoURL: url});
-		}
-
 		function addMessage(username, message) {
 			var element = document.createElement('li');
 
@@ -150,19 +156,20 @@ var vote2 = function(elem2) {
 			addMessage(username, msg);
 		});
 
-		function submitVideo() {
+		socket.on('add track', function(data) {
+			// trackList.push[] ???
+		});
+
+		function submitTrack() {
 			var toSend = {
-				'videoURL': videoUrlInput.value
+				'url': trackUrlInput.value
 			}
-			console.log(toSend);
-			socket.emit('add video', toSend);
-			videoUrlInput.value = "";
+
+			socket.emit('submit track', toSend);
+			trackUrlInput.value = "";
 		}
 	});
-}) ();
-
-
-
+})();
 
 function random_username(){
   var adjs = ["autumn", "hidden", "bitter", "misty", "silent", "empty", "dry",

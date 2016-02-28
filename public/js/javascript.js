@@ -6,23 +6,8 @@
 		var pin = document.getElementById("pin");
 		var voteCounter = document.getElementById("counter");
 		var tabs = [document.querySelector(".top-tab img"), document.querySelector(".side-tab img")];
-		var audioCtx = new AudioContext();
 		pin.onclick = pinSidebar;
 		sideBar.style.right = "-" + sideBar.offsetWidth + "px";
-
-		function createSource(trackNumber) {
-			var audio = new Audio();
-			var url = 'http://api.soundcloud.com/tracks/' + trackNumber + '/stream?client_id=4c85f5a7670cebd708284488e725bb6b';
-
-			audio.src = url;
-			audio.crossOrigin = "anonymous";
-
-			var source = audioCtx.createMediaElementSource(audio);
-			return source;
-		}
-
-		function sync() {
-		}
 
 		function pinSidebar() {
 			if (pin.checked) {
