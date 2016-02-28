@@ -20,6 +20,7 @@ html, body {
 	height: 200px;
 	overflow-x: hidden;
 	overflow-y: scroll;
+    direction: rtl;
 }
 #editor-wrapper {
 	position: absolute;
@@ -33,7 +34,9 @@ html, body {
 }
 #tracklist-canvas {
 	position: absolute;
+	left: 15px;
 	width: 100%;
+	direction: ltr;
 }
 #editor-canvas {
 	width: 90%;
@@ -209,7 +212,7 @@ form {
 }
 
 .chat {
-    height: 50%;
+    height: 100%;
     padding-bottom: 110px;
 }
 
