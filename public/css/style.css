@@ -161,7 +161,6 @@ html, body {
 #side-bar-top {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	padding: 18px 5px;
 }
 .icon {
@@ -197,6 +196,10 @@ form {
 
 .form-control {
 	border-radius: 3px !important;
+}
+
+#track-url {
+	width: 175%;
 }
 
 #createbutton {

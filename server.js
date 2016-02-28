@@ -113,6 +113,7 @@ function getTrackFromURL(url) {
 				track.length = track_info.duration;
 				track.name = track_info.title;
 				track.artist = track_info.user.username;
+				track.color = Math.floor((Math.random() * 6));
 
 				resolve(track);
 			}

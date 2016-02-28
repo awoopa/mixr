@@ -1,5 +1,7 @@
 var audioCtx = new AudioContext();
 
+var colourList = ["#F433FF","#29CCA4", "#2DB292", "#F48FFF","#9D5AFF", "#42B29B"]
+
 var createSource = function(dest, trackNumber) {
 	var audio = new Audio();
 	var url = 'http://api.soundcloud.com/tracks/' + trackNumber + '/stream?client_id=4c85f5a7670cebd708284488e725bb6b';
@@ -425,7 +427,7 @@ var createSource = function(dest, trackNumber) {
 				track.y = yscan;
 				track.h = 50;
 
-				tracklistCtx.fillStyle = "#000000";
+				tracklistCtx.fillStyle = colourList[track.color];
 				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
 
 				if (track.waveform) {
