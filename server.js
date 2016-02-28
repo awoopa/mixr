@@ -16,7 +16,7 @@ var _ = require('lodash');
 var url = require('url');
 var moment = require('moment');
 
-var syncInterval = 33;
+var syncInterval = 15;
 var nextId = 1;
 var SC = require('node-soundcloud');
 
@@ -86,6 +86,7 @@ function Track(id) {
 
 function Room() {
 	this.roomName;
+	this.tracks = {};
 	this.users = [];
 	this.currentTime = 0;
 	this.intervalObject;
@@ -147,6 +148,8 @@ io.on('connection', function (socket) {
 
 			room.intervalObject	= setInterval(updateRoom, syncInterval, room);
 		}
+
+		socket.emit('track list', room.tracks);
 	});
 
 	socket.on('submit track', function(data) {
@@ -157,13 +160,20 @@ io.on('connection', function (socket) {
 		console.log("adding track " + data.url);
 
 		getTrackFromURL(data.url).then(function (track) {
-			track.startTime = clock() + 3000; // start 3 seconds later
+			if (track.id === undefined) return;
+
 			track.number = nextId++;
+			track.startTime = clock() + 1000; // start 3 seconds later
+			room.tracks[track.number] = track;
 			io.to(room.roomName).emit('add track', track);
 		})
 	});
 
-	socket.on('send msg', function (data) {
+	socket.on('edit track', function(data) {
+		editTrack(room, data);
+	});
+
+	socket.on('send msg', function(data) {
 		if (data.msg != "") {
 			var chatMessage = {
 				username: user.name,
@@ -175,8 +185,27 @@ io.on('connection', function (socket) {
 	});
 });
 
+function editTrack(room, data) {
+	if (data.remove) {
+		delete room.tracks[data.number];
+	}
+
+	io.to(room.roomName).emit('edit track', data);
+}
+
 function updateRoom(room) {
-	io.to(room.roomName).emit('sync', { ts: clock() });
+	var t = clock();
+	for (var key in room.tracks) {
+		if (!room.tracks.hasOwnProperty(key)) continue;
+
+		var value = room.tracks[key];
+		if (value.length + value.startTime <= t) {
+			var delData = { remove: true, number: key }
+			editTrack(room, delData);
+		}
+	}
+
+	io.to(room.roomName).emit('sync', { ts: t });
 }
 
 function clock() {

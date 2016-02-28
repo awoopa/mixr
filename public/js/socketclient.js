@@ -71,7 +71,7 @@ var vote2 = function(elem2) {
 (function() {
 	"use strict";
 
-	var tracks = { };
+	var tracks = null;
 
 	function addLoadEvent(func) {
 		var oldonload = window.onload;
@@ -153,13 +153,27 @@ var vote2 = function(elem2) {
 		}
 
 		function sync(ts) {
+			if (tracks === null) return;
+
 			for (var key in tracks) {
 				if (!tracks.hasOwnProperty(key)) continue;
 
 				var value = tracks[key];
-				if (!value.playing && ts >= value.startTime) {
-					value.playing = true;
-					createSource(value.id).mediaElement.play();
+				if (!value.source && ts >= value.startTime) {
+					value.source = createSource(value.id);
+					value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+					value.source.mediaElement.play();
+				}
+
+				window.source = value.source;
+			}
+		}
+
+		function editTrack(data) {
+			if (data.remove) {
+				if (tracks[data.number] && tracks[data.number].source) {
+					tracks[data.number].source.mediaElement.stop();
+					delete tracks[data.number];
 				}
 			}
 		}
@@ -170,13 +184,24 @@ var vote2 = function(elem2) {
 			addMessage(username, msg);
 		});
 
+		socket.on('track list', function(data) {
+			if (tracks === null) {
+				console.log('receive track list ' + JSON.stringify(data));
+				tracks = data;
+			}
+		});
+
 		socket.on('sync', function(data) {
 			sync(data.ts);
 		});
 
 		socket.on('add track', function(data) {
-			data.playing = false;
+			data.source = null;
 			tracks[data.number] = data;
+		});
+
+		socket.on('edit track', function(data) {
+			editTrack(data);
 		});
 
 		function submitTrack() {
