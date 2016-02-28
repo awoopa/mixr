@@ -82,6 +82,8 @@ function Track(id) {
 	this.length;
 	this.startTime = 10000;
 	this.waveformURL;
+	this.name;
+	this.artist;
 }
 
 function Room() {
@@ -104,6 +106,10 @@ function getTrackFromURL(url) {
 			var track = new Track(track_info.id);
 			track.waveformURL = track_info.waveform_url;
 			track.length = track_info.duration;
+			track.name = track_info.title;
+			track.artist = track_info.user.username;
+
+
 			resolve(track);
 		});
 	  });
