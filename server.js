@@ -17,9 +17,7 @@ var YouTube = require('youtube-node');
 var yt = new YouTube();
 var url = require('url');
 var moment = require('moment');
-var syncFreq = 30;
-
-var time = 0;
+var syncInterval = 33;
 
 app.configure(function() {
 	// I need to access everything in '/public' directly
@@ -36,7 +34,7 @@ app.configure(function() {
 // logs every request
 app.use(function(req, res, next){
 	// output every request in the array
-	console.log({method:req.method, url: req.url, device: req.device});
+	console.log({ method:req.method, url: req.url, device: req.device });
 
 	// goes onto the next function in line
 	next();
@@ -56,22 +54,11 @@ function User(socketId, name) {
 	this.name = name;
 }
 
-function Video(videoURL) {
-	this.points = 0;
-	this.url = videoURL;
-	this.name; // TODO: fetch video name somehow
-	this.uploader;
-	this.length;
-	this.votedUsers = [];
-	this.videoId = url.parse(videoURL, true).query.v;
-}
-
 function Room() {
 	this.roomName;
 	this.users = [];
-	this.videos = {};
-	this.currentVideo = null;
 	this.currentTime = 0;
+	this.time = 0;
 	this.intervalObject;
 }
 
@@ -108,15 +95,13 @@ io.on('connection', function (socket) {
 			socket.join(room.roomName);
 		} else {
 			room = new Room();
+
 			room.roomName = data.roomName;
 			room.users.push(user);
 			rooms[roomName] = room;
-			// send sync event
-			room.intervalObject	= setInterval(updateRoom, 1000 / syncFreq, room);
-		}
 
-		socket.emit('video list', room.videos);
-		console.log(room.videos);
+			room.intervalObject	= setInterval(updateRoom, syncInterval, room);
+		}
 	});
 
 	socket.on('submit track', function(data) {
@@ -133,7 +118,7 @@ io.on('connection', function (socket) {
 		track.bpm = 100;
 		track.sampleRate = 44100;
 		track.length = 100;
-		track.startTime = 10000;
+		track.startTime = room.time + 3000; // start 3 seconds later
 
 		io.to(room.roomName).emit('add track', track);
 	});
@@ -151,41 +136,7 @@ io.on('connection', function (socket) {
 });
 
 function updateRoom(room) {
-	if (room.currentVideo !== null) {
-		// already past end of video, update with next video
-		if (room.currentTime + syncDuration > room.currentVideo.length) {
-			io.to(room.roomName).emit('video ended', {videoId: room.currentVideo.videoId});
-			delete room.videos[room.currentVideo.videoId];
-			room.currentVideo = null;
-		}
-	}
-
-	// get new video if no current video
-	if (room.currentVideo === null) {
-		if (_.size(room.videos) > 0) {
-			// Number.MIN_SAFE_INTEGER = most negative number
-			// need to account for negative voted videos too
-			var max = {points: Number.MIN_SAFE_INTEGER};
-			for (var k in room.videos) {
-				room.videos[k].points > max.points ? max = room.videos[k] : max = max;
-			}
-
-			room.currentVideo = max;
-			room.currentTime = 0;
-			sync.videoId = url.parse(room.currentVideo.url, true).query.v;
-			sync.timestamp = 0;
-		} else {
-			sync.videoId = null;
-			sync.timestamp = -1;
-		}
-	} else {
-		// currently playing video, update timestamp
-		room.currentTime += syncDuration;
-		sync.videoId = url.parse(room.currentVideo.url, true).query.v;
-		sync.timestamp = room.currentTime;
-	}
-
-	io.to(room.roomName).emit('sync', time++);
+	io.to(room.roomName).emit('sync', { ts: room.time++ });
 }
 
 server.listen(runningPortNumber);
