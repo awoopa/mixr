@@ -83,6 +83,13 @@
 			window.location.href = newRoomUrl;
 		});
 
+		document.getElementById('new-room-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			var newRoomUrl = window.location.origin + '/' + document.getElementById('nameinput').value;
+			window.location.href = newRoomUrl;
+			return false;
+		});
+
 		window.onresize = function()
 		{
 			canvas.height = canvas.clientHeight;
