@@ -175,6 +175,4 @@ function updateRoom(room) {
 	io.to(room.roomName).emit('sync', { ts: room.time++ });
 }
 
-getTrackFromURL("https://soundcloud.com/simgretina/megalovania-sim-gretina-remix").then(t => console.log(t));
-
 server.listen(runningPortNumber);
