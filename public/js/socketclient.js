@@ -351,7 +351,7 @@ var createSource = function(dest, trackNumber) {
 				if (!tracks.hasOwnProperty(k)) continue;
 
 				var track = tracks[k];
-				if (mouse.x > track.x && mouse.x < track.x + track.w && mouse.y > track.y && mouse.y < track.y + track.h) {
+				if (mouse.x > track.x && mouse.y > track.y && mouse.y < track.y + track.h) {
 					var toSend = [{ number: k, remove: true }];
 					editTracks(toSend);
 					socket.emit('edit tracks', toSend);
@@ -371,7 +371,7 @@ var createSource = function(dest, trackNumber) {
 				if (!tracks.hasOwnProperty(k)) continue;
 
 				var track = tracks[k];
-				if (e.button == 0 && mouse.x > track.x && mouse.x < track.x + track.w && mouse.y > track.y && mouse.y < track.y + track.h) {
+				if (e.button == 0 && mouse.y > track.y && mouse.y < track.y + track.h) {
 					tracklistclicking = k;
 					tracklistselected = k;
 				}
