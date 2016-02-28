@@ -231,9 +231,18 @@ function updateRoom(room) {
 		if (!room.tracks.hasOwnProperty(key)) continue;
 
 		var value = room.tracks[key];
-		if (value.length + value.startTime <= t) {
+		if (value.length / value.speed + value.startTime <= t) {
 			var delData = { remove: true, number: key }
 			editTracks(room, [delData]);
+			continue;
+		}
+
+		if (value.fade == "in" && value.startTime < t) {
+			editTracks(room, [{ number: key, vol: value.vol + (1 - value.vol) * 0.006 }]);
+		}
+
+		if (value.fade == "out") {
+			editTracks(room, [{ number: key, vol: value.vol - (value.vol) * 0.016 }]);
 		}
 	}
 

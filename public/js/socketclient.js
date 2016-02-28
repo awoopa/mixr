@@ -153,6 +153,9 @@ var vote2 = function(elem2) {
 		window.tracklistCanvas.onmouseout = tracklistonmouseup;
 		window.editorCanvas.onmousemove = editoronmousemove;
 		window.editorCanvas.onclick = editoronclick;
+		window.editorCanvas.onmousedown = editoronmousedown;
+		window.editorCanvas.onmouseup = editoronmouseup;
+		window.editorCanvas.onmouseout = editoronmouseout;
 
 		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
@@ -210,21 +213,26 @@ var vote2 = function(elem2) {
 		}
 
 		var editorRects = [
-			{ x: 10, y: 10, w: 333, h: 50, text: 'Low Pass', active: function(track) { return track.lopass; }, click: function(track) {
+			{ x: 10, y: 10, w: 285, h: 40, text: 'Low Pass', active: function(track) { return track.lopass; }, click: function(track) {
 				var toSend = [{ number: track.number, lopass: !track.lopass }];
 				editTracks(toSend);
 				socket.emit('edit tracks', toSend);
 			}},
-			{ x: 300, y: 10, w: 333, h: 50, text: 'High Pass', active: function(track) { return track.hipass; }, click: function(track) {
+			{ x: 305, y: 10, w: 285, h: 40, text: 'High Pass', active: function(track) { return track.hipass; }, click: function(track) {
 				var toSend = [{ number: track.number, hipass: !track.hipass }];
 				editTracks(toSend);
 				socket.emit('edit tracks', toSend);
 			}},
-			{ x: 600, y: 10, w: 333, h: 50, text: '2x Speed', active: function(track) { return track.speed > 1; }, click: function(track) {
-				var toSend = [{ number: track.number, speed: track.speed == 1 ? 2 : 1 }];
+			{ x: 10, y: 60, w: 285, h: 40, text: 'Fade In', active: function(track) { return track.fade == "in"; }, click: function(track) {
+				var toSend = [{ number: track.number, fade: track.fade == "in" ? "none" : "in", vol: 0 }];
 				editTracks(toSend);
 				socket.emit('edit tracks', toSend);
 			}},
+			{ x: 305, y: 60, w: 285, h: 40, text: 'Fade Out', active: function(track) { return track.fade == "out"; }, click: function(track) {
+				var toSend = [{ number: track.number, fade: track.fade == "out" ? "none" : "out" }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}}
 		];
 
 
@@ -316,6 +324,7 @@ var vote2 = function(elem2) {
 		var tracklistclicking = null;
 		var tracklistselected = null;
 		var editorMouse = { x: 0, y: 0};
+		var editorMouseDown = false;
 
 		function editoronclick(e) {
 			var r = window.editorCanvas.getBoundingClientRect();
@@ -327,11 +336,48 @@ var vote2 = function(elem2) {
 					rect.click(tracks[tracklistselected]);
 				}
 			}
+
+			editorMouseDown = true;
+			doeditorsliders();
+			editorMouseDown = false;
+		}
+
+		function doeditorsliders() {
+			if (editorMouseDown && editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 110 && editorMouse.y < 160) {
+				var toSend = [{ number: tracklistselected, vol: (editorMouse.x - 10) / 580 }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}
+
+			if (editorMouseDown && editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 160 && editorMouse.y < 200) {
+				var newSpeed = Math.pow(2, (editorMouse.x - 10) / 580 * 2 - 1);
+				var oldSpeed = tracks[tracklistselected].speed;
+				var time = clientTime();
+				var toSend = [{ number: tracklistselected, speed: newSpeed, startTime:
+					oldSpeed / newSpeed * (tracks[tracklistselected].startTime - time) + time }];
+
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}
+		}
+
+		function editoronmousedown(e) {
+			editorMouseDown = true;
+		}
+
+		function editoronmouseup(e) {
+			editorMouseDown = false;
+		}
+
+		function editoronmouseout(e) {
+			editorMouseDown = false;
 		}
 
 		function editoronmousemove(e) {
 			var r = window.editorCanvas.getBoundingClientRect();
 			editorMouse = { x: e.x - r.left, y: e.y - r.top };
+
+			doeditorsliders();
 		}
 
 		function tracklistoncontextmenu(e) {
@@ -376,7 +422,7 @@ var vote2 = function(elem2) {
 				var track = tracks[tracklistclicking];
 				var extents = getTrackHoriz(track);
 				if (Math.abs(track.x - extents.x) > 3) {
-					var toSend = [{ number: tracklistclicking, startTime: (track.x) * xscale + clientTime() }];
+					var toSend = [{ number: tracklistclicking, startTime: track.x * xscale + clientTime() }];
 					editTracks(toSend);
 					socket.emit('edit tracks', toSend);
 				}
@@ -444,7 +490,7 @@ var vote2 = function(elem2) {
 			}
 
 			var eCtx = window.editorCtx;
-			window.editorCanvas.height = 300;
+			window.editorCanvas.height = 210;
 			var width = window.editorCanvas.width;
 			var height = window.editorCanvas.height;
 
@@ -453,22 +499,53 @@ var vote2 = function(elem2) {
 				eCtx.fillStyle = "rgba(0, 0, 0, 0.1)";
 				eCtx.fillRect(0, 0, width, height);
 
+				eCtx.font = "30px Calibri";
+				var hover = "rgba(0, 0, 255, 0.5)";
+				var select = "rgba(255, 0, 0, 0.5)";
+				var none = "rgba(0, 0, 0, 0.3)";
 				for (var i = 0; i < editorRects.length; i++) {
 					var rect = editorRects[i];
+					eCtx.fillStyle = none;
+					eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
 					if (editorMouse.x > rect.x && editorMouse.x < rect.x + rect.w && editorMouse.y > rect.y && editorMouse.y < rect.y + rect.h) {
-						eCtx.fillStyle = "rgba(0, 0, 255, 0.1)";
+						eCtx.fillStyle = hover;
+						eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
 					}
 					else if (rect.active(tracks[tracklistselected])) {
-						eCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+						eCtx.fillStyle = select;
+						eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
 					}
-					else {
-						eCtx.fillStyle = "rgba(0, 0, 0, 0.1)";
-					}
-					eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
 					eCtx.fillStyle = "#000";
-					eCtx.font = "30px Calibri";
-					eCtx.fillText(rect.text, rect.x + 10, rect.y + (rect.h + 30) / 2);
+					eCtx.fillText(rect.text, rect.x + 10, rect.y + (rect.h + 20) / 2);
 				}
+
+				eCtx.fillStyle = none;
+				eCtx.fillRect(10, 110, 580, 40)
+				eCtx.fillRect(10, 160, 580, 40);
+
+				if (editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 110 && editorMouse.y < 160) {
+					eCtx.fillStyle = hover;
+					eCtx.fillRect(10, 110, editorMouse.x - 10, 40)
+				}
+				else {
+					eCtx.fillStyle = select;
+					eCtx.fillRect(10, 110, tracks[tracklistselected].vol * 580, 40)
+				}
+
+				if (editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 160 && editorMouse.y < 200) {
+					eCtx.fillStyle = hover;
+					eCtx.fillRect(10, 160, editorMouse.x - 10, 40)
+				}
+				else {
+					eCtx.fillStyle = select;
+					eCtx.fillRect(10, 160, (Math.log2(tracks[tracklistselected].speed) + 1) / 2 * 580, 40)
+				}
+
+				eCtx.fillStyle = "#000";
+				eCtx.fillText("Volume", 20, 110 + 30);
+				eCtx.fillText("Speed", 20, 160 + 30);
 			}
 		}
 
