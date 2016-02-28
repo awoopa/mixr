@@ -459,8 +459,8 @@ var createSource = function(dest, trackNumber) {
 							tracklistCtx.beginPath();
 							tracklistCtx.lineWidth = "3";
 							tracklistCtx.strokeStyle = "#66ff66"; // Green path
-							tracklistCtx.moveTo(x, track.h);
-							tracklistCtx.lineTo(x, 0);
+							tracklistCtx.moveTo(x, track.h + track.y);
+							tracklistCtx.lineTo(x, track.y);
 							tracklistCtx.stroke(); // Draw it
 							x += track.w;
 						}
