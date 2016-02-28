@@ -185,6 +185,16 @@ var vote2 = function(elem2) {
 				var value = tracks[key];
 				if (!value.source) {
 					value.source = createSource(value.id);
+
+					var waveform = new Image();
+					value.waveform = waveform;
+					waveform.src = value.waveformURL;
+					waveform.onload = function() {
+						var height = waveform.height;
+						var width = waveform.width;
+						var scale_ratio = 10 / height;
+						var new_width = width * scale_ratio;
+					};
 				}
 
 				if (ts >= value.startTime) {
@@ -296,12 +306,12 @@ var vote2 = function(elem2) {
 
 			if (window.tracklistCanvas.height != count * 50) {
 				window.tracklistCanvas.height = count * 50;
-				window.tracklistCanvas.parentElement
 			}
 
-			tracklistCtx.fillStyle = "#000000";
+			tracklistCtx.fillStyle = "#EEEEEE";
 			tracklistCtx.fillRect(0, 0, window.tracklistCanvas.width, window.tracklistCanvas.height);
 
+			tracklistCtx.font="20px Calibri";
 			var yscan = 0;
 			for (var k in tracks) {
 				if (!tracks.hasOwnProperty(k)) continue;
@@ -315,8 +325,12 @@ var vote2 = function(elem2) {
 				track.y = yscan;
 				track.h = 50;
 
-				tracklistCtx.fillStyle = "#FF0000";
-				tracklistCtx.fillRect(track.x, track.y, track.w, track.h);
+				tracklistCtx.fillStyle = "#000000";
+				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
+
+				tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
+				tracklistCtx.fillStyle = "#AAAAAA";
+				tracklistCtx.fillText(track.artist + " - " + track.name, track.x + 10, track.y + 30);
 
 				yscan += 50;
 			}
