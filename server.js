@@ -1,6 +1,6 @@
 /*************************************
 //
-// mixr	 app
+// mixr app
 //
 **************************************/
 
@@ -10,14 +10,15 @@ var app = express();
 var server = require('http').createServer(app)
 var io = require('socket.io').listen(server);
 var device  = require('express-device');
-
+var request = require('request');
 var runningPortNumber = process.env.PORT || 1337;
 var _ = require('lodash');
-var YouTube = require('youtube-node');
-var yt = new YouTube();
 var url = require('url');
 var moment = require('moment');
+
 var syncInterval = 33;
+var SC = require('node-soundcloud');
+
 
 app.configure(function() {
 	// I need to access everything in '/public' directly
@@ -40,6 +41,24 @@ app.use(function(req, res, next){
 	next();
 });
 
+const CLIENT_ID = "4c85f5a7670cebd708284488e725bb6b";
+
+SC.init({
+	id: CLIENT_ID,
+	secret: "127adaec7e8ef2779afa76d2c6b5da8c"
+});
+
+/*SC.get('/tracks/164497989', function(err, track) {
+  if ( err ) {
+    throw err;
+  } else {
+    //console.log('track retrieved:', track);
+  }
+});*/
+
+
+
+
 app.get("/", function(req, res){
 	res.render('index', {roomName: 'root'});
 });
@@ -54,6 +73,14 @@ function User(socketId, name) {
 	this.name = name;
 }
 
+function Track(id) {
+		this.id = id;
+		this.bpm = 100;
+		this.sampleRate = 44100;
+		this.length = 100;
+		this.startTime = 10000;
+	}
+
 function Room() {
 	this.roomName;
 	this.users = [];
@@ -63,6 +90,20 @@ function Room() {
 }
 
 var rooms = {};
+
+function getTrackFromURL(url) {
+	return new Promise(function(resolve, reject) {
+	  var r = request("http://api.soundcloud.com/resolve?url=" + url + "&client_id=" + CLIENT_ID, function (e, res) {
+		SC.get(r.uri.href, function (e, track_info) {
+			console.log("URL: " +  url);
+			console.log("TYPEOF TRACK_INFO " + typeof track_info);
+			console.log("TRACK_INFO: " + track_info);
+			var track = new Track(track_info.id);
+			resolve(track);
+		});
+	  });
+	});
+}
 
 io.on('connection', function (socket) {
 	var user = null;
@@ -110,17 +151,12 @@ io.on('connection', function (socket) {
 		}
 
 		console.log("adding track " + data.url);
-		var track = { }; // TODO
 
-		// process track
-		
-		track.url = data.url;
-		track.bpm = 100;
-		track.sampleRate = 44100;
-		track.length = 100;
-		track.startTime = room.time + 3000; // start 3 seconds later
+		getTrackFromURL(data.url).then(function (track) {
+			track.startTime = room.time + 3000; // start 3 seconds later
+			io.to(room.roomName).emit('add track', track);
+		})
 
-		io.to(room.roomName).emit('add track', track);
 	});
 
 	socket.on('send msg', function (data) {
@@ -138,5 +174,7 @@ io.on('connection', function (socket) {
 function updateRoom(room) {
 	io.to(room.roomName).emit('sync', { ts: room.time++ });
 }
+
+getTrackFromURL("https://soundcloud.com/simgretina/megalovania-sim-gretina-remix").then(t => console.log(t));
 
 server.listen(runningPortNumber);
