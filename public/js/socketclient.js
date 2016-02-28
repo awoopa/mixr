@@ -112,6 +112,7 @@ var vote2 = function(elem2) {
 		window.tracklistCanvas.onmousemove = tracklistonmousemove;
 		window.tracklistCanvas.onselectstart = function() { return false; }
 		window.tracklistCanvas.oncontextmenu = tracklistoncontextmenu;
+		window.tracklistCanvas.onmouseout = tracklistonmouseup;
 
 		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
@@ -330,7 +331,7 @@ var vote2 = function(elem2) {
 
 				tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
 				tracklistCtx.fillStyle = "#AAAAAA";
-				tracklistCtx.fillText(track.artist + " - " + track.name, track.x + 10, track.y + 30);
+				tracklistCtx.fillText(track.artist + " - " + track.name, Math.max(track.x + 10, 10), track.y + 30);
 
 				yscan += 50;
 			}
