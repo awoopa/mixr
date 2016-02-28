@@ -1,6 +1,6 @@
 var audioCtx = new AudioContext();
 
-var colourList = ["#F433FF","#29CCA4", "#2DB292", "#F48FFF","#9D5AFF", "#42B29B"]
+var colourList = ["#F433FF","#29CCA4", "#2DB292", "#F48FFF" ,"#5A9DFF", "#42B29B"]
 
 var createSource = function(dest, trackNumber) {
 	var audio = new Audio();
@@ -262,7 +262,7 @@ var createSource = function(dest, trackNumber) {
 			}
 		}
 
-		var xscale = 300;
+		var xscale = 50;
 		function getTrackHoriz(track) {
 			var time = clientTime();
 			return { x: (track.startTime - time) / xscale, width: (track.length / xscale / track.speed) };
@@ -420,15 +420,24 @@ var createSource = function(dest, trackNumber) {
 				var track = tracks[k];
 
 				var extents = getTrackHoriz(track);
-				if (!tracklistclicking) {
+				if (tracklistclicking != k) {
 					track.x = extents.x;
 				}
 				track.w = extents.width;
 				track.y = yscan;
 				track.h = 50;
 
-				tracklistCtx.fillStyle = colourList[track.color];
-				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
+				if (k == tracklistselected) {
+					var grd = ctx.createLinearGradient(Math.max(track.x, 0), track.y, Math.max(track.x, 0) + 50, track.y);
+					grd.addColorStop(0, "white");
+					grd.addColorStop(1, colourList[track.color]);
+					tracklistCtx.fillStyle = grd;
+					tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
+				}
+				else {
+					tracklistCtx.fillStyle = colourList[track.color];
+					tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
+				}
 
 				if (track.waveform) {
 					tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
