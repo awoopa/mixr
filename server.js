@@ -134,7 +134,7 @@ function getTrackFromURL(url) {
 				 	 .rename(track_info.permalink + ".mp3")
 				 	 .run(function() {
 				 	 	createAudioStream(path.join(__dirname, "tmp", track_info.permalink + ".mp3"))
-						.pipe(bpmSink())
+						.pipe(bpmSink({max: 180}))
 						.on("bpm", function(bpm){
 						  console.log("bpm is " + bpm);
 						  resolve(track);
