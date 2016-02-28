@@ -15,60 +15,6 @@ var createSource = function(dest, trackNumber) {
 	gain.connect(dest);
 
 	return { source: source, biquad: biquad, gain: gain };
-}
-
-var vote = function(elemid) {
-	var elem = document.getElementById(elemid);
-	var vote;
-	console.log(elem.id);
-	var className = elem.classList[1];
-	var id = elem.id.split(".");
-	if (className.indexOf('up') != -1) {
-		vote = 'upvote';
-		if (document.getElementsByClassName('upvotecolor').length > 0) {
-			elem.classList.remove('upvotecolor');
-			socket.emit('unvote', {voteDir: vote, videoId: id[1]});
-
-		} else if (document.getElementsByClassName('downvotecolor').length > 0) {
-			/*elem.classList.add('upvotecolor');
-			document.getElementById("thumbs-down." + id[1]).classList.remove('downvotecolor');
-			socket.emit('vote', {voteDir: vote, videoId: id[1]});
-
-			socket.emit('unvote', {voteDir: 'downvote', videoId: id[1]});*/
-			/*vote2("thumbs-down." + id[1]);
-			vote2("thumbs-up." + id[1]);*/
-		} else {
-			elem.classList.add('upvotecolor');
-			socket.emit('vote', {voteDir: vote, videoId: id[1]});
-		}
-	} else {
-		vote = 'downvote';
-		if (document.getElementsByClassName('downvotecolor').length > 0) {
-			elem.classList.remove('downvotecolor');
-			socket.emit('unvote', {voteDir: vote, videoId: id[1]});
-		} else if (document.getElementsByClassName('upvotecolor').length > 0) {
-			elem.classList.add('downvotecolor');
-			document.getElementById("thumbs-up." + id[1]).classList.remove('upvotecolor');
-			socket.emit('vote', {voteDir: vote, videoId: id[1]});
-			socket.emit('unvote', {voteDir: 'upvote', videoId: id[1]});
-		}
-		else {
-			elem.classList.add('downvotecolor');
-			socket.emit('vote', {voteDir: vote, videoId: id[1]});
-		}
-	}
-
-	console.log(vote);
-
-	socket.on('video voted', function(data) {
-		var points = data.points;
-		var id = data.videoId;
-		document.getElementById("thumbs-up." + id).parentNode.children[1].innerHTML = points;
-	});
-};
-
-var vote2 = function(elem2) {
-	vote(elem2);
 };
 
 (function() {

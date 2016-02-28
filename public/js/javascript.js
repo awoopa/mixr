@@ -4,7 +4,6 @@
 		var topBar = document.getElementById("top-bar");
 		var sideBar = document.getElementById("side-bar");
 		var pin = document.getElementById("pin");
-		var voteCounter = document.getElementById("counter");
 		var tabs = [document.querySelector(".top-tab img"), document.querySelector(".side-tab img")];
 		var c = document.getElementById("canvas-page");
 		var ctx = c.getContext("2d");
@@ -25,7 +24,7 @@
 		window.tracklistCtx = tracklistCtx;
 		window.editorCanvas = editorCanvas;
 		window.editorCtx = editorCtx;
-		
+
 
 
 		pin.onclick = pinSidebar;
@@ -81,6 +80,13 @@
 		document.getElementById('createbutton').addEventListener('click', function() {
 			var newRoomUrl = window.location.origin + '/' + document.getElementById('nameinput').value;
 			window.location.href = newRoomUrl;
+		});
+
+		document.getElementById('new-room-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			var newRoomUrl = window.location.origin + '/' + document.getElementById('nameinput').value;
+			window.location.href = newRoomUrl;
+			return false;
 		});
 
 		window.onresize = function()
