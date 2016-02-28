@@ -324,6 +324,8 @@ var createSource = function(dest, trackNumber) {
 			editorMouse = { x: e.x - r.left, y: e.y - r.top };
 
 			doeditorsliders();
+			e.preventDefault();
+			return false;
 		}
 
 		function tracklistoncontextmenu(e) {
@@ -429,6 +431,11 @@ var createSource = function(dest, trackNumber) {
 				if (track.waveform) {
 					tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
 				}
+
+				tracklistCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
+				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, 25 * (1 - track.vol));
+				tracklistCtx.fillRect(track.x + 1, track.y + track.h - 25 * (1 - track.vol), track.w - 2, 25 * (1 - track.vol));
+
 				tracklistCtx.fillStyle = "#AAAAAA";
 				tracklistCtx.fillText(track.artist + " - " + track.name, Math.max(track.x + 10, 10), track.y + 30);
 
