@@ -183,7 +183,7 @@ io.on('connection', function (socket) {
 			track.loop = false;
 
 			track.number = nextId++;
-			track.startTime = clock() + 1000; // start 3 seconds later
+			track.startTime = clock() + 2000; // start 2 seconds later
 			room.tracks[track.number] = track;
 			io.to(room.roomName).emit('add track', track);
 		})

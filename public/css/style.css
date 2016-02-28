@@ -296,3 +296,12 @@ form {
 {
     display: inline-block;
 }
+
+#tracklist-canvas {
+	opacity: 0.5;
+	transition: 0.2s;
+}
+
+#tracklist-canvas:hover {
+	opacity: 0.9;
+}

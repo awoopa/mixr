@@ -15,7 +15,9 @@ var createSource = function(dest, trackNumber) {
 	biquad.connect(gain);
 	gain.connect(dest);
 
-	return { source: source, biquad: biquad, gain: gain };
+	window.audio = audio;
+
+	return { audio: audio, source: source, biquad: biquad, gain: gain };
 };
 
 (function() {
@@ -171,7 +173,8 @@ var createSource = function(dest, trackNumber) {
 				socket.emit('edit tracks', toSend);
 			}},
 			{ x: 10, y: 60, w: 285, h: 40, text: 'Fade In', active: function(track) { return track.fade == "in"; }, click: function(track) {
-				var toSend = [{ number: track.number, fade: track.fade == "in" ? "none" : "in", vol: 0 }];
+				var toSend = [{ number: track.number, fade: track.fade == "in" ? "none" : "in" }];
+				if (toSend[0].fade == "in") toSend[0].vol = 0;
 				editTracks(toSend);
 				socket.emit('edit tracks', toSend);
 			}},
@@ -198,6 +201,7 @@ var createSource = function(dest, trackNumber) {
 				var value = tracks[key];
 				if (!value.source) {
 					var sources = createSource(analyser, value.id);
+					value.audio = sources.audio;
 					value.source = sources.source;
 					value.gain = sources.gain;
 					value.biquad = sources.biquad;
@@ -214,22 +218,27 @@ var createSource = function(dest, trackNumber) {
 				}
 
 				if (ts >= value.startTime) {
-					if (!value.source.mediaElement.paused) {
-						if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000 / value.source.mediaElement.playbackRate)) > 50) {
-							value.source.mediaElement.currentTime = (ts - value.startTime) / 1000 * value.source.mediaElement.playbackRate;
+					if (!value.audio.paused) {
+						var thresh = 50;
+						if (typeof InstallTrigger !== 'undefined') { // firefox has a severely broken audio player
+							thresh = 100;
+						}
+
+						if (Math.abs(ts - (value.startTime + value.audio.currentTime * 1000 / value.audio.playbackRate)) > thresh) {
+							value.audio.currentTime = (ts - value.startTime) / 1000 * value.audio.playbackRate;
 						}
 					}
 					else {
-						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000 * value.source.mediaElement.playbackRate;
-						value.source.mediaElement.play();
+						value.audio.currentTime = (ts - value.startTime) / 1000 * value.audio.playbackRate;
+						value.audio.play();
 					}
 
 					if (value.gain.gain.value != value.vol) {
 						value.gain.gain.value = value.vol;
 					}
 
-					if (value.speed != value.source.mediaElement.playbackRate) {
-						value.source.mediaElement.playbackRate = value.speed;
+					if (value.speed != value.audio.playbackRate) {
+						value.audio.playbackRate = value.speed;
 					}
 
 					if (value.hipass) {
@@ -259,9 +268,9 @@ var createSource = function(dest, trackNumber) {
 						}
 					}
 				}
-				if (ts <= value.startTime && !value.source.mediaElement.paused) {
-					value.source.mediaElement.pause();
-					value.source.mediaElement.currentTime = 0;
+				if (ts <= value.startTime && !value.audio.paused) {
+					value.audio.pause();
+					value.audio.currentTime = 0;
 				}
 			}
 		}
@@ -539,7 +548,7 @@ var createSource = function(dest, trackNumber) {
 				if (data.remove) {
 					if (tracks[data.number]) {
 						if (tracks[data.number].source) {
-							tracks[data.number].source.mediaElement.pause();
+							tracks[data.number].audio.pause();
 						}
 						if (data.number == tracklistselected) {
 							tracklistselected = null;
