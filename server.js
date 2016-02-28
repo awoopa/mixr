@@ -16,7 +16,7 @@ var _ = require('lodash');
 var url = require('url');
 var moment = require('moment');
 
-var syncInterval = 15;
+var syncInterval = 50;
 var nextId = 1;
 var SC = require('node-soundcloud');
 
@@ -98,13 +98,19 @@ function getTrackFromURL(url) {
 	return new Promise(function(resolve, reject) {
 	  var r = request("http://api.soundcloud.com/resolve?url=" + url + "&client_id=" + CLIENT_ID, function (e, res) {
 		SC.get(r.uri.href, function (e, track_info) {
-			console.log("URL: " +  url);
-			console.log("TYPEOF TRACK_INFO " + typeof track_info);
-			console.log("TRACK_INFO: " + track_info);
-			var track = new Track(track_info.id);
-			track.waveformURL = track_info.waveform_url;
-			track.length = track_info.duration;
-			resolve(track);
+			if (!track_info) {
+				var track = new Track(null);
+				resolve(track);
+			}
+			else {
+				console.log("URL: " +  url);
+				console.log("TYPEOF TRACK_INFO " + typeof track_info);
+				console.log("TRACK_INFO: " + track_info);
+				var track = new Track(track_info.id);
+				track.waveformURL = track_info.waveform_url;
+				track.length = track_info.duration;
+				resolve(track);
+			}
 		});
 	  });
 	});
@@ -199,6 +205,7 @@ function editTracks(room, datas) {
 		}
 	}
 
+	console.log("edit tracks " + JSON.stringify(datas));
 	io.to(room.roomName).emit('edit tracks', datas);
 }
 

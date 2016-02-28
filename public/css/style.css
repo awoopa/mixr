@@ -14,10 +14,11 @@ html, body {
 
 #tracklist-wrapper {
 	position: absolute;
+	top: 100px;
 	max-height: 50%;
 	width: 100%;
-	height: auto;
-	overflow-x: hidden;
+	height: 200px;
+	overflow-x: scroll;
 	overflow-y: scroll;
 }
 #tracklist-canvas {

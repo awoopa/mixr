@@ -70,7 +70,11 @@ var vote2 = function(elem2) {
 	"use strict";
 
 	var tracks = null;
-	var clientTime = -1;
+	var clientOffset = null;
+
+	function clientTime() {
+		return clientOffset + window.performance.now();
+	}
 
 	function addLoadEvent(func) {
 		var oldonload = window.onload;
@@ -103,12 +107,18 @@ var vote2 = function(elem2) {
 		var trackSubmit = document.querySelector('#submit-track');
 		trackSubmit.onclick = submitTrack;
 
+		window.tracklistCanvas.onmousedown = tracklistonmousedown;
+		window.tracklistCanvas.onmouseup = tracklistonmouseup;
+		window.tracklistCanvas.onmousemove = tracklistonmousemove;
+		window.tracklistCanvas.onselectstart = function() { return false; }
+		window.tracklistCanvas.oncontextmenu = tracklistoncontextmenu;
+
 		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
 		messageInput.onkeypress = function(event) {
 			//enter key is 13
 			if (event.keyCode == 13) {
-				event.cancelubble = true;
+			event.cancelubble = true;
 				event.returnValue = false;
 				event.preventDefault();
 				event.stopPropagation();
@@ -154,38 +164,166 @@ var vote2 = function(elem2) {
 		function sync(ts) {
 			if (tracks === null) return;
 
-			if (clientTime < 0) {
-				clientTime = ts;
+			if (clientOffset === null) {
+				clientOffset = ts - window.performance.now();
 			}
 			else {
-				if (Math.abs(clientTime - ts) > 5) {
-					clientTime += (ts - clientTime) * 0.2;
+				var time = clientTime();
+				if (Math.abs(time - ts) > 5) {
+					clientOffset += (ts - time) * 0.2;
 				}
 			}
 		}
 
 		function loop() {
 			if (!tracks) return;
-			var ts = clientTime;
+			var ts = clientTime();
 
 			for (var key in tracks) {
 				if (!tracks.hasOwnProperty(key)) continue;
 
 				var value = tracks[key];
-				if (!value.source && ts >= value.startTime) {
+				if (!value.source) {
 					value.source = createSource(value.id);
-					value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
-					value.source.mediaElement.play();
 				}
-				else if (value.source) {
-					if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000)) > 50) {
-						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+
+				if (ts >= value.startTime) {
+					if (!value.source.mediaElement.paused) {
+						if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000)) > 50) {
+							value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+						}
 					}
+					else {
+						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+						value.source.mediaElement.play();
+					}
+				}
+				if (ts <= value.startTime && !value.source.mediaElement.paused) {
+					value.source.mediaElement.pause();
+					value.source.mediaElement.currentTime = 0;
 				}
 			}
 		}
 
+		var xscale = 200;
+		function getTrackHoriz(track) {
+			var time = clientTime();
+			return { x: (track.startTime - time) / xscale, width: (track.length / xscale) };
+		}
+
+		var tracklistprevmouse = null;
+		var tracklistclicking = null;
+
+		function tracklistoncontextmenu(e) {
+			var r = window.tracklistCanvas.getBoundingClientRect();
+			var mouse = { x: e.x - r.left, y: e.y - r.top };
+
+			for (var k in tracks) {
+				if (!tracks.hasOwnProperty(k)) continue;
+
+				var track = tracks[k];
+				if (mouse.x > track.x && mouse.x < track.x + track.w && mouse.y > track.y && mouse.y < track.y + track.h) {
+					var toSend = [{ number: k, remove: true }];
+					editTracks(toSend);
+					socket.emit('edit tracks', toSend);
+				}
+			}
+
+			e.preventDefault();
+			return false;
+		}
+
+		function tracklistonmousedown(e) {
+			var r = window.tracklistCanvas.getBoundingClientRect();
+			var mouse = { x: e.x - r.left, y: e.y - r.top };
+			var tracklistprevmouse = mouse;
+
+			for (var k in tracks) {
+				if (!tracks.hasOwnProperty(k)) continue;
+
+				var track = tracks[k];
+				if (e.button == 0 && mouse.x > track.x && mouse.x < track.x + track.w && mouse.y > track.y && mouse.y < track.y + track.h) {
+					tracklistclicking = k;
+				}
+			}
+
+			return true;
+		}
+
+		function tracklistonmouseup(e) {
+			if (tracklistclicking != null) {
+				var track = tracks[tracklistclicking];
+				var extents = getTrackHoriz(track);
+				var toSend = [{ number: tracklistclicking, startTime: (track.x) * xscale + clientTime() }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}
+
+			tracklistprevmouse = null;
+			tracklistclicking = null;
+		}
+
+		function tracklistonmousemove(e) {
+			var r = window.tracklistCanvas.getBoundingClientRect();
+			var nowmouse = { x: e.x - r.top, y: e.y - r.left };
+
+			if (tracklistclicking) {
+				var track = tracks[tracklistclicking];
+
+				track.x += nowmouse.x - tracklistprevmouse.x;
+			}
+
+			tracklistprevmouse = nowmouse;
+		}
+
+		function render() {
+			var ctx = window.ctx;
+			ctx.clearRect(0, 0, window.canvas.width, window.canvas.height);
+			var tracklistCtx = window.tracklistCtx;
+
+			var grd = ctx.createLinearGradient(0, 0, 0, 200);
+			grd.addColorStop(0, "black");
+			grd.addColorStop(1, "white");
+			ctx.fillStyle = grd;
+			ctx.fillRect(0, 0, document.body.clientWidth, document.body.clientHeight);
+
+			var count = 0;
+			for (var k in tracks) {
+				if (tracks.hasOwnProperty(k)) {
+					count++;
+				}
+			}
+
+			if (window.tracklistCanvas.height != count * 50) {
+				window.tracklistCanvas.height = count * 50;
+				window.tracklistCanvas.parentElement
+			}
+
+			tracklistCtx.fillStyle = "#000000";
+			tracklistCtx.fillRect(0, 0, window.tracklistCanvas.width, window.tracklistCanvas.height);
+
+			var yscan = 0;
+			for (var k in tracks) {
+				if (!tracks.hasOwnProperty(k)) continue;
+				var track = tracks[k];
+
+				var extents = getTrackHoriz(track);
+				if (!tracklistclicking) {
+					track.x = extents.x;
+				}
+				track.w = extents.width;
+				track.y = yscan;
+				track.h = 50;
+
+				tracklistCtx.fillStyle = "#FF0000";
+				tracklistCtx.fillRect(track.x, track.y, track.w, track.h);
+
+				yscan += 50;
+			}
+		}
+
 		setInterval(loop, 30);
+		setInterval(render, 50);
 
 		function editTracks(datas) {
 			for (var i = 0; i < datas.length; i++) {
@@ -193,7 +331,7 @@ var vote2 = function(elem2) {
 				if (data.remove) {
 					if (tracks[data.number]) {
 						if (tracks[data.number].source) {
-							tracks[data.number].source.mediaElement.stop();
+							tracks[data.number].source.mediaElement.pause();
 						}
 						delete tracks[data.number];
 					}
@@ -223,35 +361,12 @@ var vote2 = function(elem2) {
 		});
 
 		socket.on('add track', function(data) {
-			console.log("receive track");
 			data.source = null;
 			tracks[data.number] = data;
-
-			var count = 0;
-			for (var k in tracks) {
-			    if (tracks.hasOwnProperty(k)) {
-			       ++count;
-			    }
-			}
-
-			window.tracklistCanvas.height = count * 50;
-
-			var waveform = new Image();
-			waveform.src = data.waveformURL;
-			waveform.onload = function() {
-				var height = waveform.height;
-				var width = waveform.width;
-				var scale_ratio = 10 / height;
-				var new_width = width * scale_ratio;
-				window.tracklistCtx.fillStyle = "green";
-				window.tracklistCtx.fillRect(0, 0, 50, 50*height/width);
-			    //window.tracklistCtx.drawImage(waveform, 0, 0, new_width, 10);
-
-			};
 		});
 
-		socket.on('edit track', function(data) {
-			editTrack(data);
+		socket.on('edit tracks', function(data) {
+			editTracks(data);
 		});
 
 		function submitTrack() {
