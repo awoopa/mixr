@@ -12,22 +12,15 @@
 		var tracklistCanvas = document.getElementById("tracklist-canvas");
 		var tracklistCtx = tracklistCanvas.getContext("2d");
 
+		tracklistCanvas.width = window.innerWidth;
+		tracklistCanvas.height = 50;
+
+		window.canvas = c;
 		window.ctx = ctx;
 		
-		tracklistCanvas.width = window.innerWidth;
-		tracklistCanvas.height = 0;
-
 		window.tracklistCanvas = tracklistCanvas;
 		window.tracklistCtx = tracklistCtx;
 
-
-		// Create gradient
-		var grd = ctx.createLinearGradient(0, 0, 0, 200);
-		grd.addColorStop(0, "black");
-		grd.addColorStop(1, "white");
-		// Fill with gradient
-		ctx.fillStyle = grd;
-		ctx.fillRect(0,0, document.body.clientWidth, document.body.clientHeight);
 
 		pin.onclick = pinSidebar;
 		sideBar.style.right = "-" + sideBar.offsetWidth + "px";
