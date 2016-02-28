@@ -12,8 +12,6 @@ var createSource = function(trackNumber) {
 	return source;
 }
 
-window.source = createSource("205955458");
-
 var vote = function(elemid) {
 	var elem = document.getElementById(elemid);
 	var vote;
@@ -72,6 +70,7 @@ var vote2 = function(elem2) {
 	"use strict";
 
 	var tracks = null;
+	var clientTime = -1;
 
 	function addLoadEvent(func) {
 		var oldonload = window.onload;
@@ -155,6 +154,20 @@ var vote2 = function(elem2) {
 		function sync(ts) {
 			if (tracks === null) return;
 
+			if (clientTime < 0) {
+				clientTime = ts;
+			}
+			else {
+				if (Math.abs(clientTime - ts) > 5) {
+					clientTime += (ts - clientTime) * 0.2;
+				}
+			}
+		}
+
+		function loop() {
+			if (!tracks) return;
+			var ts = clientTime;
+
 			for (var key in tracks) {
 				if (!tracks.hasOwnProperty(key)) continue;
 
@@ -164,16 +177,30 @@ var vote2 = function(elem2) {
 					value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
 					value.source.mediaElement.play();
 				}
-
-				window.source = value.source;
+				else if (value.source) {
+					if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000)) > 50) {
+						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+					}
+				}
 			}
 		}
 
-		function editTrack(data) {
-			if (data.remove) {
-				if (tracks[data.number] && tracks[data.number].source) {
-					tracks[data.number].source.mediaElement.stop();
-					delete tracks[data.number];
+		setInterval(loop, 30);
+
+		function editTracks(datas) {
+			for (var i = 0; i < datas.length; i++) {
+				var data = datas[i];
+				if (data.remove) {
+					if (tracks[data.number]) {
+						if (tracks[data.number].source) {
+							tracks[data.number].source.mediaElement.stop();
+						}
+						delete tracks[data.number];
+					}
+				}
+				else {
+					var obj = tracks[data.number];
+					obj.startTime = data.startTime;
 				}
 			}
 		}
@@ -196,6 +223,7 @@ var vote2 = function(elem2) {
 		});
 
 		socket.on('add track', function(data) {
+			console.log("receive track");
 			data.source = null;
 			tracks[data.number] = data;
 		});

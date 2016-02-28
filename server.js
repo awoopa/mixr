@@ -169,8 +169,8 @@ io.on('connection', function (socket) {
 		})
 	});
 
-	socket.on('edit track', function(data) {
-		editTrack(room, data);
+	socket.on('edit tracks', function(data) {
+		editTracks(room, data);
 	});
 
 	socket.on('send msg', function(data) {
@@ -185,12 +185,20 @@ io.on('connection', function (socket) {
 	});
 });
 
-function editTrack(room, data) {
-	if (data.remove) {
-		delete room.tracks[data.number];
+function editTracks(room, datas) {
+	for (var i = 0; i < datas.length; i++) {
+		var data = datas[i];
+
+		if (data.remove) {
+			delete room.tracks[data.number];
+		}
+		else {
+			var obj = room.tracks[data.number];
+			obj.startTime = data.startTime;
+		}
 	}
 
-	io.to(room.roomName).emit('edit track', data);
+	io.to(room.roomName).emit('edit tracks', datas);
 }
 
 function updateRoom(room) {
