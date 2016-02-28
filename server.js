@@ -79,6 +79,7 @@ function Track(id) {
 		this.sampleRate = 44100;
 		this.length = 100;
 		this.startTime = 10000;
+		this.waveformURL;
 	}
 
 function Room() {
@@ -99,6 +100,7 @@ function getTrackFromURL(url) {
 			console.log("TYPEOF TRACK_INFO " + typeof track_info);
 			console.log("TRACK_INFO: " + track_info);
 			var track = new Track(track_info.id);
+			track.waveformURL = track_info.waveform_url;
 			resolve(track);
 		});
 	  });
