@@ -117,9 +117,9 @@ function getTrackFromURL(url) {
 				resolve(track);
 			}
 			else {
-				console.log("URL: " +  url);
+				/*console.log("URL: " +  url);
 				console.log("TYPEOF TRACK_INFO " + typeof track_info);
-				console.log("TRACK_INFO: " + track_info);
+				console.log("TRACK_INFO: " + track_info);*/
 				var track = new Track(track_info.id);
 				track.waveformURL = track_info.waveform_url;
 				track.length = track_info.duration;
@@ -136,7 +136,7 @@ function getTrackFromURL(url) {
 				 	 	createAudioStream(path.join(__dirname, "tmp", track_info.permalink + ".mp3"))
 						.pipe(bpmSink())
 						.on("bpm", function(bpm){
-						  console.log("bpm is %d", bpm);
+						  console.log("bpm is " + bpm);
 						  resolve(track);
 						});
 				 	 });
