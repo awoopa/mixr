@@ -15,10 +15,22 @@ var runningPortNumber = process.env.PORT || 1337;
 var _ = require('lodash');
 var url = require('url');
 var moment = require('moment');
-
+var path = require('path');
+var bpmSink = require('bpm.js')
+var spawn = require('child_process').spawn;
 var syncInterval = 50;
+var Download = require('download');
 var nextId = 1;
 var SC = require('node-soundcloud');
+
+// needed to convert mp3 to proper format
+function createAudioStream(filename) {
+  var args = "-t raw -r 44100 -e float -c 1 -".split(" ")
+  args.unshift(filename)
+  var sox = spawn("sox", args)
+  return sox.stdout
+}
+
 
 
 app.configure(function() {
@@ -114,7 +126,20 @@ function getTrackFromURL(url) {
 				track.name = track_info.title;
 				track.artist = track_info.user.username;
 
-				resolve(track);
+				console.log(path.join(__dirname, "tmp"));
+
+				new Download()
+					 .get(track_info.stream_url + "?client_id=" + CLIENT_ID)
+				 	 .dest(path.join(__dirname, "tmp"))
+				 	 .rename(track_info.permalink + ".mp3")
+				 	 .run(function() {
+				 	 	createAudioStream(path.join(__dirname, "tmp", track_info.permalink + ".mp3"))
+						.pipe(bpmSink())
+						.on("bpm", function(bpm){
+						  console.log("bpm is %d", bpm);
+						  resolve(track);
+						});
+				 	 });
 			}
 		});
 	  });

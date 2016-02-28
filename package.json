@@ -14,6 +14,7 @@
   "private": true,
   "dependencies": {
     "bpm.js": "^2.0.0",
+    "download": "^4.4.3",
     "ejs": "~0.8.5",
     "express": "~3.4.6",
     "express-device": "~0.3.7",
