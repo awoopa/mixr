@@ -454,12 +454,13 @@ var createSource = function(dest, trackNumber) {
 					eCtx.fillStyle = none;
 					eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
 
-					if (editorMouse.x > rect.x && editorMouse.x < rect.x + rect.w && editorMouse.y > rect.y && editorMouse.y < rect.y + rect.h) {
-						eCtx.fillStyle = hover;
+					if (rect.active(tracks[tracklistselected])) {
+						eCtx.fillStyle = select;
 						eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
 					}
-					else if (rect.active(tracks[tracklistselected])) {
-						eCtx.fillStyle = select;
+
+					if (editorMouse.x > rect.x && editorMouse.x < rect.x + rect.w && editorMouse.y > rect.y && editorMouse.y < rect.y + rect.h) {
+						eCtx.fillStyle = hover;
 						eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
 					}
 
@@ -471,22 +472,20 @@ var createSource = function(dest, trackNumber) {
 				eCtx.fillRect(10, 110, 580, 40)
 				eCtx.fillRect(10, 160, 580, 40);
 
+				eCtx.fillStyle = select;
+				eCtx.fillRect(10, 110, tracks[tracklistselected].vol * 580, 40)
+
 				if (editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 110 && editorMouse.y < 160) {
 					eCtx.fillStyle = hover;
 					eCtx.fillRect(10, 110, editorMouse.x - 10, 40)
 				}
-				else {
-					eCtx.fillStyle = select;
-					eCtx.fillRect(10, 110, tracks[tracklistselected].vol * 580, 40)
-				}
+
+				eCtx.fillStyle = select;
+				eCtx.fillRect(10, 160, (Math.log2(tracks[tracklistselected].speed) + 1) / 2 * 580, 40)
 
 				if (editorMouse.x > 10 && editorMouse.x < 590 && editorMouse.y > 160 && editorMouse.y < 200) {
 					eCtx.fillStyle = hover;
 					eCtx.fillRect(10, 160, editorMouse.x - 10, 40)
-				}
-				else {
-					eCtx.fillStyle = select;
-					eCtx.fillRect(10, 160, (Math.log2(tracks[tracklistselected].speed) + 1) / 2 * 580, 40)
 				}
 
 				eCtx.fillStyle = "#000";
