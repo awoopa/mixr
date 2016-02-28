@@ -8,6 +8,18 @@
 		var tabs = [document.querySelector(".top-tab img"), document.querySelector(".side-tab img")];
 		var c = document.getElementById("canvas-page");
 		var ctx = c.getContext("2d");
+		
+		var tracklistCanvas = document.getElementById("tracklist-canvas");
+		var tracklistCtx = tracklistCanvas.getContext("2d");
+
+		window.ctx = ctx;
+		
+		tracklistCanvas.width = window.innerWidth;
+		tracklistCanvas.height = 0;
+
+		window.tracklistCanvas = tracklistCanvas;
+		window.tracklistCtx = tracklistCtx;
+
 
 		// Create gradient
 		var grd = ctx.createLinearGradient(0, 0, 0, 200);

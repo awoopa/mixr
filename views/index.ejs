@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <script type="text/javascript" src="js/zlib.js"></script>
+        <script type="text/javascript" src="js/png.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -64,12 +66,12 @@
                 </div>
             </div>
         <canvas id="canvas-page">
-            <div class="main">
-                <div id="youtube">
-                    <div id="player"></div>
-                </div>
-            </div>
         </canvas>
+
+        <div id="tracklist-wrapper">
+        <canvas id="tracklist-canvas" height="0">
+        </canvas>
+        </div>
         <!-- Create Room Modal  -->
         <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog modal-sm" role="document">

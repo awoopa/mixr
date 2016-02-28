@@ -226,6 +226,28 @@ var vote2 = function(elem2) {
 			console.log("receive track");
 			data.source = null;
 			tracks[data.number] = data;
+
+			var count = 0;
+			for (var k in tracks) {
+			    if (tracks.hasOwnProperty(k)) {
+			       ++count;
+			    }
+			}
+
+			window.tracklistCanvas.height = count * 50;
+
+			var waveform = new Image();
+			waveform.src = data.waveformURL;
+			waveform.onload = function() {
+				var height = waveform.height;
+				var width = waveform.width;
+				var scale_ratio = 10 / height;
+				var new_width = width * scale_ratio;
+				window.tracklistCtx.fillStyle = "green";
+				window.tracklistCtx.fillRect(0, 0, 50, 50*height/width);
+			    //window.tracklistCtx.drawImage(waveform, 0, 0, new_width, 10);
+
+			};
 		});
 
 		socket.on('edit track', function(data) {

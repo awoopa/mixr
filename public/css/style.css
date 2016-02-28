@@ -12,6 +12,19 @@ html, body {
     height:100%;
 }
 
+#tracklist-wrapper {
+	position: absolute;
+	max-height: 50%;
+	width: 100%;
+	height: auto;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+#tracklist-canvas {
+	position: absolute;
+	width: 100%;
+}
+
 #top-bar {
 	position: absolute;
 	display: flex;
