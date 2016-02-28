@@ -20,10 +20,13 @@ html, body {
 	height: 200px;
 	overflow-x: hidden;
 	overflow-y: scroll;
+    direction:rtl; 
 }
+
 #tracklist-canvas {
 	position: absolute;
 	width: 100%;
+	direction: ltr;
 }
 
 #top-bar {
