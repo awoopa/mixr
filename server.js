@@ -222,3 +222,4 @@ function clock() {
 }
 
 server.listen(runningPortNumber);
+console.log("server listening on port " + runningPortNumber);
