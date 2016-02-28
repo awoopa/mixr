@@ -17,6 +17,7 @@ var url = require('url');
 var moment = require('moment');
 
 var syncInterval = 33;
+var nextId = 1;
 var SC = require('node-soundcloud');
 
 
@@ -74,13 +75,14 @@ function User(socketId, name) {
 }
 
 function Track(id) {
-		this.id = id;
-		this.bpm = 100;
-		this.sampleRate = 44100;
-		this.length = 100;
-		this.startTime = 10000;
-		this.waveformURL;
-	}
+	this.remove = false;
+	this.id = id;
+	this.bpm = 100;
+	this.sampleRate = 44100;
+	this.length = 100;
+	this.startTime = 10000;
+	this.waveformURL;
+}
 
 function Room() {
 	this.roomName;
@@ -156,9 +158,9 @@ io.on('connection', function (socket) {
 
 		getTrackFromURL(data.url).then(function (track) {
 			track.startTime = room.time + 3000; // start 3 seconds later
+			track.number = nextId++;
 			io.to(room.roomName).emit('add track', track);
 		})
-
 	});
 
 	socket.on('send msg', function (data) {

@@ -1,12 +1,4 @@
-var socket = io('votetube.cloudapp.net');
-
-socket.on('sync', function(data) {
-	sync(data.ts);
-});
-
-socket.on('add track', function(track) {
-	enqueueTrack(track);
-});
+var socket = io('localhost:1337');
 
 // socket.on('message',function(data) {
 //   console.log('Received a message from the server',data);

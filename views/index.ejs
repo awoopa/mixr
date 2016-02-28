@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>VoteTube - <%= roomName %></title>
+        <title>Mixr - <%= roomName %></title>
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
         <link rel="icon" type="image/png" href="img/favicon.png" />
         <link rel="stylesheet" href="css/style.css" />
@@ -18,61 +18,58 @@
         <script type="text/javascript" src="js/socket.js"></script>
     </head>
     <body data-room="<%= roomName %>">
-        <div id="top-bar">
-            <div class="top-tab">
-                <img src="img/trapezoid.png">
-            </div>
-            <span id="top-video-title">Waiting for Stream...</span>
-            <div class="btn-group" role="group" id="top-bar-btns">
-                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#createModal"><i class="fa fa-plus"></i> Create Room</button>
-            </div>
-        </div>
-        <div id="side-bar">
-            <div class="side-tab">
-                <img src="img/trapezoid.png">
-            </div>
-            <div id="side-bar-top">
-                <input type="checkbox" id="pin" class="triggers" />
-                <label for="pin" class="icon">
-                    <i class="fa fa-thumb-tack fa-lg"></i>
-                </label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="video-url" placeholder="Video URL">
-                </div>
-                <div class="btn-group" role="group" id="side-bar-btns">
-                    <button type="button" class="btn btn-primary urlbutton" id="submit-video">Submit Video</button>
-                </div>
-            </div>
-            <div class="voting">
-                <div class="video-entry">
-                    <div class="vote-arrows">
-                        <i class="fa fa-thumbs-up"></i>
-                        <p id="counter">0</p>
-                        <i class="fa fa-thumbs-down"></i>
-                    </div>
-                    <div class="video-thumbnail"></div>
-                    <div class="video-info-text">
-                        <div class="video-title"></div>
-                        <div class="video-uploader"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="chat">
-                <div class="chatArea">
-                    <ul class="messages"></ul>
-                </div>
-                <form class="chat-form">
-                    <input class="messageInput" placeholder="Type a message" type="text" />
-                    <button class="messageSubmit" type="button">Send</button>
-                </form>
-            </div>
-        </div>
-        <div class="main">
-            <div id="youtube">
-                <div id="player"></div>
-            </div>
-        </div>
 
+            <div id="top-bar">
+                <div class="top-tab">
+                    <img src="img/trapezoid.png">
+                </div>
+                <!--<span id="top-video-title">Waiting for Stream...</span>-->
+                <div class="btn-group" role="group" id="top-bar-btns">
+                    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#createModal"><i class="fa fa-plus"></i> Create Room</button>
+                </div>
+            </div>
+            <div id="side-bar">
+                <div class="side-tab">
+                    <img src="img/trapezoid.png">
+                </div>
+                <div id="side-bar-top">
+                    <input type="checkbox" id="pin" class="triggers" />
+                    <label for="pin" class="icon">
+                        <i class="fa fa-thumb-tack fa-lg"></i>
+                    </label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="track-url" placeholder="Music URL">
+                    </div>
+                    <div class="btn-group" role="group" id="side-bar-btns">
+                        <button type="button" class="btn btn-primary urlbutton" id="submit-track">Submit Music</button>
+                    </div>
+                </div>
+                <div class="voting">
+                    <div class="video-entry">
+                        <div class="video-thumbnail"></div>
+                        <div class="video-info-text">
+                            <div class="video-title"></div>
+                            <div class="video-uploader"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat">
+                    <div class="chatArea">
+                        <ul class="messages"></ul>
+                    </div>
+                    <form class="chat-form">
+                        <input class="messageInput" placeholder="Type a message" type="text" />
+                        <button class="messageSubmit" type="button">Send</button>
+                    </form>
+                </div>
+            </div>
+        <canvas id="canvas-page">
+            <div class="main">
+                <div id="youtube">
+                    <div id="player"></div>
+                </div>
+            </div>
+        </canvas>
         <!-- Create Room Modal  -->
         <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog modal-sm" role="document">
