@@ -27,7 +27,7 @@ html, body {
 	top: 350px;
 	max-height: 50%;
 	width: 100%;
-	height: 210px;
+	height: 260px;
 	text-align: center;
 	overflow-x: hidden;
 	overflow-y: hidden;
@@ -46,7 +46,6 @@ html, body {
 	position: absolute;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	top: -70px;
 	width: 100%;
 	height: 70px;
@@ -200,6 +199,9 @@ form {
 
 #track-url {
 	width: 100%;
+	min-width: 50em;
+	padding: 3px;
+	margin: 10px;
 }
 
 #createbutton {
@@ -274,7 +276,12 @@ form {
 .messageSubmit {
 	margin-left: -50px;
 	width: 50px;
-	background: #1e8a04;
+	background: #2DB292;
+}
+
+.btn-primary {
+    background-color: #2DB292 !important;
+    border-color: #2DB292 !important;
 }
 
 .usernameSubmit {

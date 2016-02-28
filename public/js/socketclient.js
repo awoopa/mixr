@@ -1,6 +1,5 @@
 var audioCtx = new AudioContext();
-
-var colourList = ["#F433FF","#29CCA4", "#2DB292", "#F48FFF" ,"#5A9DFF", "#42B29B"]
+var colourList = ["#F433FF","#29CCA4", "#F48FFF","#9D5AFF", "#42B29B", "#99DDF4"]
 
 var createSource = function(dest, trackNumber) {
 	var audio = new Audio();
@@ -180,7 +179,12 @@ var createSource = function(dest, trackNumber) {
 				var toSend = [{ number: track.number, fade: track.fade == "out" ? "none" : "out" }];
 				editTracks(toSend);
 				socket.emit('edit tracks', toSend);
-			}}
+			}},
+			{ x: 10, y: 210, w: 285, h: 40, text: 'Loop', active: function(track) { return track.loop; }, click: function(track) {
+				var toSend = [{ number: track.number, loop: !track.loop }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}},
 		];
 
 
@@ -426,26 +430,40 @@ var createSource = function(dest, trackNumber) {
 				track.w = extents.width;
 				track.y = yscan;
 				track.h = 50;
+				var effectiveWidth = track.loop ? window.tracklistCanvas.width - track.x : track.w - 2;
 
 				if (k == tracklistselected) {
 					var grd = ctx.createLinearGradient(Math.max(track.x, 0), track.y, Math.max(track.x, 0) + 50, track.y);
 					grd.addColorStop(0, "white");
 					grd.addColorStop(1, colourList[track.color]);
 					tracklistCtx.fillStyle = grd;
-					tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
 				}
 				else {
 					tracklistCtx.fillStyle = colourList[track.color];
-					tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
 				}
-
+				tracklistCtx.fillRect(track.x + 1, track.y, effectiveWidth, track.h);
 				if (track.waveform) {
-					tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
+					if (track.loop) {
+						var x = track.x;
+						while (x < window.tracklistCanvas.width) {
+							tracklistCtx.drawImage(track.waveform, x, track.y, track.w, track.h);
+							tracklistCtx.beginPath();
+							tracklistCtx.lineWidth = "3";
+							tracklistCtx.strokeStyle = "#66ff66"; // Green path
+							tracklistCtx.moveTo(x, track.h);
+							tracklistCtx.lineTo(x, 0);
+							tracklistCtx.stroke(); // Draw it
+							x += track.w;
+						}
+					}
+					else {
+						tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
+					}
 				}
 
 				tracklistCtx.fillStyle = "rgba(238, 238, 238, 0.7)";
-				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, 25 * (1 - track.vol));
-				tracklistCtx.fillRect(track.x + 1, track.y + track.h - 25 * (1 - track.vol), track.w - 2, 25 * (1 - track.vol));
+				tracklistCtx.fillRect(track.x + 1, track.y, effectiveWidth, 25 * (1 - track.vol));
+				tracklistCtx.fillRect(track.x + 1, track.y + track.h - 25 * (1 - track.vol), effectiveWidth, 25 * (1 - track.vol));
 
 				tracklistCtx.fillStyle = "#5555AA";
 				tracklistCtx.fillText(track.artist + " - " + track.name, Math.max(track.x + 10, 10), track.y + 30);
@@ -454,7 +472,7 @@ var createSource = function(dest, trackNumber) {
 			}
 
 			var eCtx = window.editorCtx;
-			window.editorCanvas.height = 210;
+			window.editorCanvas.height = 260;
 			var width = window.editorCanvas.width;
 			var height = window.editorCanvas.height;
 
@@ -537,6 +555,7 @@ var createSource = function(dest, trackNumber) {
 					if (data.lopass !== undefined) obj.lopass = data.lopass;
 					if (data.fade !== undefined) obj.fade = data.fade;
 					if (data.vol !== undefined) obj.vol = data.vol;
+					if (data.loop !== undefined) obj.loop = data.loop;
 				}
 			}
 		}

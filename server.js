@@ -180,6 +180,7 @@ io.on('connection', function (socket) {
 			track.lopass = false;
 			track.fade = "none";
 			track.vol = 1;
+			track.loop = false;
 
 			track.number = nextId++;
 			track.startTime = clock() + 1000; // start 3 seconds later
@@ -219,6 +220,7 @@ function editTracks(room, datas) {
 			if (data.lopass !== undefined) obj.lopass = data.lopass;
 			if (data.fade !== undefined) obj.fade = data.fade;
 			if (data.vol !== undefined) obj.vol = data.vol;
+			if (data.loop !== undefined) obj.loop = data.loop;
 		}
 	}
 
@@ -233,9 +235,15 @@ function updateRoom(room) {
 
 		var value = room.tracks[key];
 		if (value.length / value.speed + value.startTime <= t) {
-			var delData = { remove: true, number: key }
-			editTracks(room, [delData]);
-			continue;
+			if (value.loop == false) {
+				var delData = { remove: true, number: key }
+				editTracks(room, [delData]);
+				continue;
+			}
+			else {
+				var data = { startTime: t , number: key }
+				editTracks(room, [data]);
+			}
 		}
 
 		if (value.fade == "in" && value.startTime < t) {
