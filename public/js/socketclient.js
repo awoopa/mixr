@@ -216,7 +216,7 @@ var vote2 = function(elem2) {
 			}
 		}
 
-		var xscale = 200;
+		var xscale = 300;
 		function getTrackHoriz(track) {
 			var time = clientTime();
 			return { x: (track.startTime - time) / xscale, width: (track.length / xscale) };
