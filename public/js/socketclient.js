@@ -432,11 +432,11 @@ var createSource = function(dest, trackNumber) {
 					tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
 				}
 
-				tracklistCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
+				tracklistCtx.fillStyle = "rgba(238, 238, 238, 0.7)";
 				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, 25 * (1 - track.vol));
 				tracklistCtx.fillRect(track.x + 1, track.y + track.h - 25 * (1 - track.vol), track.w - 2, 25 * (1 - track.vol));
 
-				tracklistCtx.fillStyle = "#AAAAAA";
+				tracklistCtx.fillStyle = "#5555AA";
 				tracklistCtx.fillText(track.artist + " - " + track.name, Math.max(track.x + 10, 10), track.y + 30);
 
 				yscan += 50;
