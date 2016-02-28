@@ -1,26 +1,6 @@
 var audioCtx = new AudioContext();
-var analyser = audioCtx.createAnalyser();
-var visualizer = new Visualizer();
-analyser.fftSize = 256;
 
-var SoundCloudAudioSource = function(audio) {
-	var self = this;
-	var sampleAudioStream = function() {
-		analyser.getByteFrequencyData(self.streamData);
-		// calculate an overall volume value
-		var total = 0;
-		for (var i = 0; i < 80; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
-			total += self.streamData[i];
-		}
-		self.volume = total;
-	};
-	setInterval(sampleAudioStream, 20);
-	// public properties and methods
-	this.volume = 0;
-	this.streamData = new Uint8Array(128);
-}
-
-var createSource = function(trackNumber) {
+var createSource = function(dest, trackNumber) {
 	var audio = new Audio();
 	var url = 'http://api.soundcloud.com/tracks/' + trackNumber + '/stream?client_id=4c85f5a7670cebd708284488e725bb6b';
 
@@ -28,15 +8,7 @@ var createSource = function(trackNumber) {
 	audio.crossOrigin = "anonymous";
 
 	var source = audioCtx.createMediaElementSource(audio);
-	source.connect(analyser);
-	source.connect(audioCtx.destination);
-	var audioSource = new SoundCloudAudioSource(audio);
-
-	visualizer.init({
-        containerId: 'visualizer',
-        audioSource: audioSource
-    });
-
+	source.connect(dest);
 	return source;
 }
 
@@ -99,6 +71,39 @@ var vote2 = function(elem2) {
 
 	var tracks = null;
 	var clientOffset = null;
+	var visualizer = new Visualizer();
+	var analyser = audioCtx.createAnalyser();
+	analyser.connect(audioCtx.destination);
+	analyser.fftSize = 128;
+
+	var SoundCloudAudioSource = function() {
+		var self = this;
+		var sampleAudioStream = function() {
+			analyser.getByteFrequencyData(self.streamData);
+			// calculate an overall volume value
+			var total = 0;
+			for (var i = 0; i < 80; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
+				total += self.streamData[i];
+			}
+			self.volume = total;
+		};
+		setInterval(sampleAudioStream, 50);
+
+		this.volume = 0;
+		this.streamData = new Uint8Array(analyser.fftSize);
+	}
+
+
+	setTimeout(function() {
+		visualizer.init({
+			containerId: 'visualizer',
+			audioSource: new SoundCloudAudioSource()
+		});
+
+		window.visualizer = visualizer;
+	}, 10);
+
+	var dataArray = new Uint8Array(analyser.fftSize);
 
 	function clientTime() {
 		return clientOffset + window.performance.now();
@@ -213,7 +218,7 @@ var vote2 = function(elem2) {
 
 				var value = tracks[key];
 				if (!value.source) {
-					value.source = createSource(value.id);
+					value.source = createSource(analyser, value.id);
 
 					var waveform = new Image();
 					value.waveform = waveform;
@@ -317,14 +322,17 @@ var vote2 = function(elem2) {
 
 		function render() {
 			var ctx = window.ctx;
+			ctx.globalAlpha = 1;
 			ctx.clearRect(0, 0, window.canvas.width, window.canvas.height);
 			var tracklistCtx = window.tracklistCtx;
 
+			/*
 			var grd = ctx.createLinearGradient(0, 0, 0, 200);
 			grd.addColorStop(0, "black");
 			grd.addColorStop(1, "white");
 			ctx.fillStyle = grd;
 			ctx.fillRect(0, 0, document.body.clientWidth, document.body.clientHeight);
+			*/
 
 			var count = 0;
 			for (var k in tracks) {
@@ -357,7 +365,9 @@ var vote2 = function(elem2) {
 				tracklistCtx.fillStyle = "#000000";
 				tracklistCtx.fillRect(track.x + 1, track.y, track.w - 2, track.h);
 
-				tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
+				if (track.waveform) {
+					tracklistCtx.drawImage(track.waveform, track.x, track.y, track.w, track.h);
+				}
 				tracklistCtx.fillStyle = "#AAAAAA";
 				tracklistCtx.fillText(track.artist + " - " + track.name, Math.max(track.x + 10, 10), track.y + 30);
 
@@ -366,7 +376,7 @@ var vote2 = function(elem2) {
 		}
 
 		setInterval(loop, 30);
-		setInterval(render, 50);
+		setInterval(render, 30);
 
 		function editTracks(datas) {
 			for (var i = 0; i < datas.length; i++) {

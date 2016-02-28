@@ -172,7 +172,7 @@ io.on('connection', function (socket) {
 		console.log("adding track " + data.url);
 
 		getTrackFromURL(data.url).then(function (track) {
-			if (track.id === undefined) return;
+			if (track.id === undefined || track.id === null) return;
 
 			track.number = nextId++;
 			track.startTime = clock() + 1000; // start 3 seconds later

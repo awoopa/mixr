@@ -76,5 +76,12 @@
 			var newRoomUrl = window.location.origin + '/' + document.getElementById('nameinput').value;
 			window.location.href = newRoomUrl;
 		});
+
+		window.onresize = function()
+		{
+			canvas.height = canvas.clientHeight;
+			canvas.width = canvas.clientWidth;
+		}
+		window.onresize();
 	};
 }) ();

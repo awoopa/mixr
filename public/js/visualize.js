@@ -237,7 +237,6 @@ var Visualizer = function() {
         }
     };
 
-
     var drawBg = function() {
         bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
         var r, g, b, a;
@@ -328,19 +327,20 @@ var Visualizer = function() {
 
         // foreground hexagons layer
         fgCanvas = document.createElement('canvas');
-        fgCanvas.setAttribute('style', 'position: absolute; z-index: 9');
+        fgCanvas.setAttribute('style', 'position: absolute; z-index: -3');
         fgCtx = fgCanvas.getContext("2d");
         container.appendChild(fgCanvas);
 
         // middle starfield layer
         sfCanvas = document.createElement('canvas');
         sfCtx = sfCanvas.getContext("2d");
-        sfCanvas.setAttribute('style', 'position: absolute; z-index: 5');
+        sfCanvas.setAttribute('style', 'position: absolute; z-index: -4');
         container.appendChild(sfCanvas);
 
         // background image layer
         bgCanvas = document.createElement('canvas');
         bgCtx = bgCanvas.getContext("2d");
+        bgCanvas.setAttribute('style', 'position: absolute; z-index: -2');
         container.appendChild(bgCanvas);
 
         makePolygonArray();
@@ -349,10 +349,9 @@ var Visualizer = function() {
         this.resizeCanvas();
         draw();
 
-
         setInterval(drawBg, 100);
-        setInterval(rotateForeground, 20);
-        // resize the canvas to fill browser window dynamically
+        setInterval(rotateForeground, 50);
+
         window.addEventListener('resize', this.resizeCanvas, false);
     };
 };
