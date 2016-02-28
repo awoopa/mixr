@@ -209,7 +209,7 @@ function updateRoom(room) {
 		var value = room.tracks[key];
 		if (value.length + value.startTime <= t) {
 			var delData = { remove: true, number: key }
-			editTrack(room, delData);
+			editTracks(room, [delData]);
 		}
 	}
 
