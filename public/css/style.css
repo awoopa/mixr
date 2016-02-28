@@ -191,13 +191,6 @@ html, body {
     clip: rect(0, 0, 0, 0);
 }
 
-.video-entry {
-	border-top: 1px solid white;
-	border-bottom: 1px solid white;
-	display: flex;
-	align-items: center;
-}
-
 form {
 	text-align: center;
 }

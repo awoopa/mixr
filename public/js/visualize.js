@@ -1,5 +1,6 @@
 
 /**
+ *  Created by Michael on 31/12/13.
  * The Visualizer object, after being instantiated, must be initialized with the init() method,
  * which takes an options object specifying the element to append the canvases to and the audiosource which will
  * provide the data to be visualized.
