@@ -146,6 +146,7 @@ io.on('connection', function (socket) {
 			room.users.push(user);
 			rooms[roomName] = room;
 
+			socket.join(room.roomName);
 			room.intervalObject	= setInterval(updateRoom, syncInterval, room);
 		}
 
