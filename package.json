@@ -13,13 +13,14 @@
   "main": "server.js",
   "private": true,
   "dependencies": {
+    "bpm.js": "^2.0.0",
     "ejs": "~0.8.5",
     "express": "~3.4.6",
     "express-device": "~0.3.7",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
     "node-soundcloud": "0.0.5",
-    "socket.io": "1.3.7",
+    "socket.io": "1.3.7"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
