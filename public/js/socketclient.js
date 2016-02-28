@@ -8,8 +8,13 @@ var createSource = function(dest, trackNumber) {
 	audio.crossOrigin = "anonymous";
 
 	var source = audioCtx.createMediaElementSource(audio);
-	source.connect(dest);
-	return source;
+	var biquad = audioCtx.createBiquadFilter();
+	var gain = audioCtx.createGain();
+	source.connect(biquad);
+	biquad.connect(gain);
+	gain.connect(dest);
+
+	return { source: source, biquad: biquad, gain: gain };
 }
 
 var vote = function(elemid) {
@@ -146,6 +151,8 @@ var vote2 = function(elem2) {
 		window.tracklistCanvas.onselectstart = function() { return false; }
 		window.tracklistCanvas.oncontextmenu = tracklistoncontextmenu;
 		window.tracklistCanvas.onmouseout = tracklistonmouseup;
+		window.editorCanvas.onmousemove = editoronmousemove;
+		window.editorCanvas.onclick = editoronclick;
 
 		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
@@ -167,14 +174,7 @@ var vote2 = function(elem2) {
 				socket.emit('send msg', {username: username, msg: message});
 			}
 			messageInput.value = "";
-			//addMessage(username, message);
 		}
-
-/*		usernameInput.onkeypress = function(e) {
-			if (e.keyCode == 13) {
-				setUsername();
-			}
-		}*/
 
 		function addMessage(username, message) {
 			var element = document.createElement('li');
@@ -209,6 +209,25 @@ var vote2 = function(elem2) {
 			}
 		}
 
+		var editorRects = [
+			{ x: 10, y: 10, w: 333, h: 50, text: 'Low Pass', active: function(track) { return track.lopass; }, click: function(track) {
+				var toSend = [{ number: track.number, lopass: !track.lopass }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}},
+			{ x: 300, y: 10, w: 333, h: 50, text: 'High Pass', active: function(track) { return track.hipass; }, click: function(track) {
+				var toSend = [{ number: track.number, hipass: !track.hipass }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}},
+			{ x: 600, y: 10, w: 333, h: 50, text: '2x Speed', active: function(track) { return track.speed > 1; }, click: function(track) {
+				var toSend = [{ number: track.number, speed: track.speed == 1 ? 2 : 1 }];
+				editTracks(toSend);
+				socket.emit('edit tracks', toSend);
+			}},
+		];
+
+
 		function loop() {
 			if (!tracks) return;
 			var ts = clientTime();
@@ -218,7 +237,10 @@ var vote2 = function(elem2) {
 
 				var value = tracks[key];
 				if (!value.source) {
-					value.source = createSource(analyser, value.id);
+					var sources = createSource(analyser, value.id);
+					value.source = sources.source;
+					value.gain = sources.gain;
+					value.biquad = sources.biquad;
 
 					var waveform = new Image();
 					value.waveform = waveform;
@@ -233,13 +255,48 @@ var vote2 = function(elem2) {
 
 				if (ts >= value.startTime) {
 					if (!value.source.mediaElement.paused) {
-						if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000)) > 50) {
-							value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+						if (Math.abs(ts - (value.startTime + value.source.mediaElement.currentTime * 1000 / value.source.mediaElement.playbackRate)) > 50) {
+							value.source.mediaElement.currentTime = (ts - value.startTime) / 1000 * value.source.mediaElement.playbackRate;
 						}
 					}
 					else {
-						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000;
+						value.source.mediaElement.currentTime = (ts - value.startTime) / 1000 * value.source.mediaElement.playbackRate;
 						value.source.mediaElement.play();
+					}
+
+					if (value.gain.gain.value != value.vol) {
+						value.gain.gain.value = value.vol;
+					}
+
+					if (value.speed != value.source.mediaElement.playbackRate) {
+						value.source.mediaElement.playbackRate = value.speed;
+					}
+
+					if (value.hipass) {
+						if (value.lopass) {
+							if (value.biquad.type != "bandpass") {
+								value.biquad.type = "bandpass";
+								value.biquad.frequency.value = 1000;
+							}
+						}
+						else {
+							if (value.biquad.type != "highpass" || value.biquad.frequency.value < 10) {
+								value.biquad.type = "highpass";
+								value.biquad.frequency.value = 1000;
+							}
+						}
+					}
+					else if (value.lopass) {
+						if (value.biquad.type != "lowpass") {
+							value.biquad.type = "lowpass";
+							value.biquad.frequency.value = 1000;
+						}
+					}
+					else {
+						if (value.biquad.type != "highpass" || value.biquad.frequency.value > 10) {
+							value.biquad.type = "highpass";
+							value.biquad.frequency.value = 1;
+						}
 					}
 				}
 				if (ts <= value.startTime && !value.source.mediaElement.paused) {
@@ -252,11 +309,30 @@ var vote2 = function(elem2) {
 		var xscale = 300;
 		function getTrackHoriz(track) {
 			var time = clientTime();
-			return { x: (track.startTime - time) / xscale, width: (track.length / xscale) };
+			return { x: (track.startTime - time) / xscale, width: (track.length / xscale / track.speed) };
 		}
 
 		var tracklistprevmouse = null;
 		var tracklistclicking = null;
+		var tracklistselected = null;
+		var editorMouse = { x: 0, y: 0};
+
+		function editoronclick(e) {
+			var r = window.editorCanvas.getBoundingClientRect();
+			var mouse = { x: e.x - r.left, y: e.y - r.top };
+
+			for (var i = 0; i < editorRects.length; i++) {
+				var rect = editorRects[i];
+				if (mouse.x > rect.x && mouse.x < rect.x + rect.w && mouse.y > rect.y && mouse.y < rect.y + rect.h) {
+					rect.click(tracks[tracklistselected]);
+				}
+			}
+		}
+
+		function editoronmousemove(e) {
+			var r = window.editorCanvas.getBoundingClientRect();
+			editorMouse = { x: e.x - r.left, y: e.y - r.top };
+		}
 
 		function tracklistoncontextmenu(e) {
 			var r = window.tracklistCanvas.getBoundingClientRect();
@@ -288,6 +364,7 @@ var vote2 = function(elem2) {
 				var track = tracks[k];
 				if (e.button == 0 && mouse.x > track.x && mouse.x < track.x + track.w && mouse.y > track.y && mouse.y < track.y + track.h) {
 					tracklistclicking = k;
+					tracklistselected = k;
 				}
 			}
 
@@ -298,9 +375,11 @@ var vote2 = function(elem2) {
 			if (tracklistclicking != null) {
 				var track = tracks[tracklistclicking];
 				var extents = getTrackHoriz(track);
-				var toSend = [{ number: tracklistclicking, startTime: (track.x) * xscale + clientTime() }];
-				editTracks(toSend);
-				socket.emit('edit tracks', toSend);
+				if (Math.abs(track.x - extents.x) > 3) {
+					var toSend = [{ number: tracklistclicking, startTime: (track.x) * xscale + clientTime() }];
+					editTracks(toSend);
+					socket.emit('edit tracks', toSend);
+				}
 			}
 
 			tracklistprevmouse = null;
@@ -316,23 +395,13 @@ var vote2 = function(elem2) {
 
 				track.x += nowmouse.x - tracklistprevmouse.x;
 			}
-
 			tracklistprevmouse = nowmouse;
 		}
 
 		function render() {
 			var ctx = window.ctx;
-			ctx.globalAlpha = 1;
 			ctx.clearRect(0, 0, window.canvas.width, window.canvas.height);
 			var tracklistCtx = window.tracklistCtx;
-
-			/*
-			var grd = ctx.createLinearGradient(0, 0, 0, 200);
-			grd.addColorStop(0, "black");
-			grd.addColorStop(1, "white");
-			ctx.fillStyle = grd;
-			ctx.fillRect(0, 0, document.body.clientWidth, document.body.clientHeight);
-			*/
 
 			var count = 0;
 			for (var k in tracks) {
@@ -373,6 +442,34 @@ var vote2 = function(elem2) {
 
 				yscan += 50;
 			}
+
+			var eCtx = window.editorCtx;
+			window.editorCanvas.height = 300;
+			var width = window.editorCanvas.width;
+			var height = window.editorCanvas.height;
+
+			eCtx.clearRect(0, 0, width, height);
+			if (tracklistselected) {
+				eCtx.fillStyle = "rgba(0, 0, 0, 0.1)";
+				eCtx.fillRect(0, 0, width, height);
+
+				for (var i = 0; i < editorRects.length; i++) {
+					var rect = editorRects[i];
+					if (editorMouse.x > rect.x && editorMouse.x < rect.x + rect.w && editorMouse.y > rect.y && editorMouse.y < rect.y + rect.h) {
+						eCtx.fillStyle = "rgba(0, 0, 255, 0.1)";
+					}
+					else if (rect.active(tracks[tracklistselected])) {
+						eCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+					}
+					else {
+						eCtx.fillStyle = "rgba(0, 0, 0, 0.1)";
+					}
+					eCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+					eCtx.fillStyle = "#000";
+					eCtx.font = "30px Calibri";
+					eCtx.fillText(rect.text, rect.x + 10, rect.y + (rect.h + 30) / 2);
+				}
+			}
 		}
 
 		setInterval(loop, 30);
@@ -386,12 +483,20 @@ var vote2 = function(elem2) {
 						if (tracks[data.number].source) {
 							tracks[data.number].source.mediaElement.pause();
 						}
+						if (data.number == tracklistselected) {
+							tracklistselected = null;
+						}
 						delete tracks[data.number];
 					}
 				}
 				else {
 					var obj = tracks[data.number];
-					obj.startTime = data.startTime;
+					if (data.startTime !== undefined) obj.startTime = data.startTime;
+					if (data.speed !== undefined) obj.speed = data.speed;
+					if (data.hipass !== undefined) obj.hipass = data.hipass;
+					if (data.lopass !== undefined) obj.lopass = data.lopass;
+					if (data.fade !== undefined) obj.fade = data.fade;
+					if (data.vol !== undefined) obj.vol = data.vol;
 				}
 			}
 		}

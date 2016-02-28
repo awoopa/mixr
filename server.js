@@ -174,6 +174,12 @@ io.on('connection', function (socket) {
 		getTrackFromURL(data.url).then(function (track) {
 			if (track.id === undefined || track.id === null) return;
 
+			track.speed = 1;
+			track.hipass = false;
+			track.lopass = false;
+			track.fade = "none";
+			track.vol = 1;
+
 			track.number = nextId++;
 			track.startTime = clock() + 1000; // start 3 seconds later
 			room.tracks[track.number] = track;
@@ -206,7 +212,12 @@ function editTracks(room, datas) {
 		}
 		else {
 			var obj = room.tracks[data.number];
-			obj.startTime = data.startTime;
+			if (data.startTime !== undefined) obj.startTime = data.startTime;
+			if (data.speed !== undefined) obj.speed = data.speed;
+			if (data.hipass !== undefined) obj.hipass = data.hipass;
+			if (data.lopass !== undefined) obj.lopass = data.lopass;
+			if (data.fade !== undefined) obj.fade = data.fade;
+			if (data.vol !== undefined) obj.vol = data.vol;
 		}
 	}
 

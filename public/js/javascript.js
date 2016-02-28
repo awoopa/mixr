@@ -12,6 +12,9 @@
 		var tracklistCanvas = document.getElementById("tracklist-canvas");
 		var tracklistCtx = tracklistCanvas.getContext("2d");
 
+		var editorCanvas = document.getElementById("editor-canvas");
+		var editorCtx = editorCanvas.getContext("2d");
+
 		tracklistCanvas.width = window.innerWidth;
 		tracklistCanvas.height = 50;
 
@@ -20,6 +23,9 @@
 
 		window.tracklistCanvas = tracklistCanvas;
 		window.tracklistCtx = tracklistCtx;
+		window.editorCanvas = editorCanvas;
+		window.editorCtx = editorCtx;
+		
 
 
 		pin.onclick = pinSidebar;
@@ -81,6 +87,8 @@
 		{
 			canvas.height = canvas.clientHeight;
 			canvas.width = canvas.clientWidth;
+			editorCanvas.height = editorCanvas.clientHeight;
+			editorCanvas.width = editorCanvas.clientWidth;
 		}
 		window.onresize();
 	};
