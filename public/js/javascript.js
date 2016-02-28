@@ -72,8 +72,4 @@
 			window.location.href = newRoomUrl;
 		});
 	};
-
-	window.addEventListener('resize', function(event) {
-		setPlayerSize(document.documentElement.clientWidth, document.documentElement.clientHeight);
-	});
 }) ();

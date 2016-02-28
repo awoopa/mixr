@@ -71,6 +71,8 @@ var vote2 = function(elem2) {
 (function() {
 	"use strict";
 
+	var tracks = { };
+
 	function addLoadEvent(func) {
 		var oldonload = window.onload;
 		if (typeof window.onload != 'function') {
@@ -98,9 +100,9 @@ var vote2 = function(elem2) {
 		/*usernameSubmit.onclick = setUsername;*/
 		messageSubmit.onclick = messageSend;
 
-		var videoUrlInput = document.querySelector('#video-url')
-		var videoSubmit = document.querySelector('#submit-video');
-		videoSubmit.onclick = submitVideo;
+		var trackUrlInput = document.querySelector('#track-url')
+		var trackSubmit = document.querySelector('#submit-track');
+		trackSubmit.onclick = submitTrack;
 
 		socket.emit('join room', { roomName: document.body.dataset.room, userName: username });
 
@@ -150,14 +152,21 @@ var vote2 = function(elem2) {
 			}
 		}
 
+		function sync() {
+		}
+
 		socket.on('receive msg', function(data) {
 			var username = data.username;
 			var msg = data.msg;
 			addMessage(username, msg);
 		});
 
+		socket.on('sync', function(data) {
+			sync(data.ts);
+		});
+
 		socket.on('add track', function(data) {
-			// trackList.push[] ???
+			createSource(data.id).mediaElement.play();
 		});
 
 		function submitTrack() {
