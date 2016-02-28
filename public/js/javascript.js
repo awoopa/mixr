@@ -10,9 +10,9 @@
 		var ctx = c.getContext("2d");
 
 		// Create gradient
-		var grd = ctx.createLinearGradient(0,0,0,200);
-		grd.addColorStop(0,"black");
-		grd.addColorStop(1,"white");
+		var grd = ctx.createLinearGradient(0, 0, 0, 200);
+		grd.addColorStop(0, "black");
+		grd.addColorStop(1, "white");
 		// Fill with gradient
 		ctx.fillStyle = grd;
 		ctx.fillRect(0,0, document.body.clientWidth, document.body.clientHeight);

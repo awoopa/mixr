@@ -87,7 +87,6 @@ function Room() {
 	this.roomName;
 	this.users = [];
 	this.currentTime = 0;
-	this.time = 0;
 	this.intervalObject;
 }
 
@@ -155,7 +154,7 @@ io.on('connection', function (socket) {
 		console.log("adding track " + data.url);
 
 		getTrackFromURL(data.url).then(function (track) {
-			track.startTime = room.time + 3000; // start 3 seconds later
+			track.startTime = clock() + 3000; // start 3 seconds later
 			track.number = nextId++;
 			io.to(room.roomName).emit('add track', track);
 		})
@@ -174,7 +173,12 @@ io.on('connection', function (socket) {
 });
 
 function updateRoom(room) {
-	io.to(room.roomName).emit('sync', { ts: room.time++ });
+	io.to(room.roomName).emit('sync', { ts: clock() });
+}
+
+function clock() {
+    var end = process.hrtime();
+    return Math.round((end[0] * 1000) + (end[1] / 1000000));
 }
 
 server.listen(runningPortNumber);

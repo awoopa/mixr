@@ -152,7 +152,16 @@ var vote2 = function(elem2) {
 			}
 		}
 
-		function sync() {
+		function sync(ts) {
+			for (var key in tracks) {
+				if (!tracks.hasOwnProperty(key)) continue;
+
+				var value = tracks[key];
+				if (!value.playing && ts >= value.startTime) {
+					value.playing = true;
+					createSource(value.id).mediaElement.play();
+				}
+			}
 		}
 
 		socket.on('receive msg', function(data) {
@@ -166,7 +175,8 @@ var vote2 = function(elem2) {
 		});
 
 		socket.on('add track', function(data) {
-			createSource(data.id).mediaElement.play();
+			data.playing = false;
+			tracks[data.number] = data;
 		});
 
 		function submitTrack() {
@@ -180,18 +190,18 @@ var vote2 = function(elem2) {
 	});
 })();
 
-function random_username(){
-  var adjs = ["autumn", "hidden", "bitter", "misty", "silent", "empty", "dry",
+function random_username() {
+  var adjs = ["responsive", "hidden", "bitter", "misty", "silent", "empty", "dry",
   "dark", "summer", "icy", "delicate", "quiet", "white", "cool", "spring",
   "winter", "patient", "twilight", "dawn", "crimson", "wispy", "weathered",
   "blue", "billowing", "broken", "cold", "damp", "falling", "frosty", "green",
   "long", "late", "lingering", "bold", "little", "morning", "muddy", "old",
-  "red", "rough", "still", "small", "sparkling", "throbbing", "shy",
+  "red", "rough", "still", "small", "sparkling", "memetic", "shy",
   "wandering", "withered", "wild", "black", "young", "holy", "solitary",
   "fragrant", "aged", "snowy", "proud", "floral", "restless", "divine",
   "polished", "ancient", "purple", "lively", "nameless"]
 
-  , nouns = ["waterfall", "river", "breeze", "moon", "rain", "wind", "sea",
+  , nouns = ["prayer", "river", "breeze", "moon", "rain", "wind", "sea",
   "morning", "snow", "lake", "sunset", "pine", "shadow", "leaf", "dawn",
   "glitter", "forest", "hill", "cloud", "meadow", "sun", "glade", "bird",
   "brook", "butterfly", "bush", "dew", "dust", "field", "fire", "flower",
@@ -201,5 +211,5 @@ function random_username(){
   "sun", "wood", "dream", "cherry", "tree", "fog", "frost", "voice", "paper",
   "frog", "smoke", "star"];
 
-  return adjs[Math.floor(Math.random()*(adjs.length-1))]+"_"+nouns[Math.floor(Math.random()*(nouns.length-1))];
+  return adjs[Math.floor(Math.random() * (adjs.length-1))]+"_"+nouns[Math.floor(Math.random()*(nouns.length-1))];
 }
