@@ -6,6 +6,12 @@ html, body {
 	overflow: hidden;
 }
 
+#canvas-page {
+    position:absolute;
+    width:100%;
+    height:100%;
+}
+
 #top-bar {
 	position: absolute;
 	display: flex;
@@ -54,10 +60,10 @@ html, body {
 	z-index: -1;
 }
 
-#youtube {
+/*#youtube {
 	width: 100%;
 	display: block;
-}
+}*/
 
 .side-tab {
 	position: absolute;

@@ -6,6 +6,17 @@
 		var pin = document.getElementById("pin");
 		var voteCounter = document.getElementById("counter");
 		var tabs = [document.querySelector(".top-tab img"), document.querySelector(".side-tab img")];
+		var c = document.getElementById("canvas-page");
+		var ctx = c.getContext("2d");
+
+		// Create gradient
+		var grd = ctx.createLinearGradient(0,0,0,200);
+		grd.addColorStop(0,"black");
+		grd.addColorStop(1,"white");
+		// Fill with gradient
+		ctx.fillStyle = grd;
+		ctx.fillRect(0,0, document.body.clientWidth, document.body.clientHeight);
+
 		pin.onclick = pinSidebar;
 		sideBar.style.right = "-" + sideBar.offsetWidth + "px";
 
@@ -21,7 +32,7 @@
 		function getCursorPosition(e){
 			// Mouse moves. Now show tabs
 			clearTimeout(mouseTimer);
-			if (document.getElementsByClassName("top-bar-hover").length == 0 && 
+			if (document.getElementsByClassName("top-bar-hover").length == 0 &&
 				document.getElementsByClassName("side-bar-hover").length == 0) {
 				tabs.forEach(function(t) {
 					t.style.opacity = 0.5;
@@ -61,4 +72,8 @@
 			window.location.href = newRoomUrl;
 		});
 	};
+
+	window.addEventListener('resize', function(event) {
+		setPlayerSize(document.documentElement.clientWidth, document.documentElement.clientHeight);
+	});
 }) ();
