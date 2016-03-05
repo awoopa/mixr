@@ -27,6 +27,32 @@
 
 
 
+		var SoundCloudAudioSource = function() {
+			var self = this;
+			var sampleAudioStream = function() {
+				window.analyser.getByteFrequencyData(self.streamData);
+				// calculate an overall volume value
+				var total = 0;
+				for (var i = 0; i < 80; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
+					total += self.streamData[i];
+				}
+				self.volume = total;
+			};
+			setInterval(sampleAudioStream, 50);
+
+			this.volume = 0;
+			this.streamData = new Uint8Array(window.analyser.fftSize);
+		};
+
+		var visualizer = new Visualizer();
+		visualizer.init({
+			containerId: 'visualizer',
+			audioSource: new SoundCloudAudioSource()
+		});
+		window.visualizer = visualizer;
+
+
+
 		pin.onclick = pinSidebar;
 		sideBar.style.right = "-" + sideBar.offsetWidth + "px";
 

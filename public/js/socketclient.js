@@ -25,37 +25,11 @@ var createSource = function(dest, trackNumber) {
 
 	var tracks = null;
 	var clientOffset = null;
-	var visualizer = new Visualizer();
 	var analyser = audioCtx.createAnalyser();
 	analyser.connect(audioCtx.destination);
 	analyser.fftSize = 128;
 
-	var SoundCloudAudioSource = function() {
-		var self = this;
-		var sampleAudioStream = function() {
-			analyser.getByteFrequencyData(self.streamData);
-			// calculate an overall volume value
-			var total = 0;
-			for (var i = 0; i < 80; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
-				total += self.streamData[i];
-			}
-			self.volume = total;
-		};
-		setInterval(sampleAudioStream, 50);
-
-		this.volume = 0;
-		this.streamData = new Uint8Array(analyser.fftSize);
-	}
-
-
-	setTimeout(function() {
-		visualizer.init({
-			containerId: 'visualizer',
-			audioSource: new SoundCloudAudioSource()
-		});
-
-		window.visualizer = visualizer;
-	}, 10);
+	window.analyser = analyser;	
 
 	var dataArray = new Uint8Array(analyser.fftSize);
 
